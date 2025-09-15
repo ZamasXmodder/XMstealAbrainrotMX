@@ -1,426 +1,365 @@
--- XM PANEL MX - STEAL A BRAINROT
--- Roblox GUI Script
-
+-- XM StealAbrainrot MX GUI Panel
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
-local LocalizationService = game:GetService("LocalizationService")
+local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Crear ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "XMPanelMX"
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Name = "XMStealAbrainrotPanel"
 screenGui.Parent = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Frame principal del panel (más oscuro)
+-- Frame principal
 local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainPanel"
-mainFrame.Size = UDim2.new(0, 450, 0, 600)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -300)
-mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8) -- Más oscuro
-mainFrame.BackgroundTransparency = 0
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 400, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
--- Corner redondeado
+-- Crear esquinas redondeadas para el frame principal
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 24)
+mainCorner.CornerRadius = UDim.new(0, 15)
 mainCorner.Parent = mainFrame
 
--- Borde rainbow animado (más grueso)
+-- Frame del borde animado
 local borderFrame = Instance.new("Frame")
-borderFrame.Name = "RainbowBorder"
-borderFrame.Size = UDim2.new(1, 8, 1, 8) -- Borde más grueso
-borderFrame.Position = UDim2.new(0, -4, 0, -4)
-borderFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 128)
-borderFrame.BorderSizePixel = 0
-borderFrame.ZIndex = mainFrame.ZIndex - 1
+borderFrame.Name = "BorderFrame"
+borderFrame.Size = UDim2.new(1, 4, 1, 4)
+borderFrame.Position = UDim2.new(0, -2, 0, -2)
+borderFrame.BackgroundTransparency = 1
 borderFrame.Parent = mainFrame
+borderFrame.ZIndex = mainFrame.ZIndex - 1
 
-local borderCorner = Instance.new("UICorner")
-borderCorner.CornerRadius = UDim.new(0, 28)
-borderCorner.Parent = borderFrame
-
--- Gradiente rainbow para el borde (más vibrante)
+-- Crear el borde gradiente animado
 local borderGradient = Instance.new("UIGradient")
-borderGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
-    ColorSequenceKeypoint.new(0.14, Color3.fromRGB(255, 69, 0)),
-    ColorSequenceKeypoint.new(0.28, Color3.fromRGB(255, 215, 0)),
-    ColorSequenceKeypoint.new(0.42, Color3.fromRGB(0, 255, 0)),
-    ColorSequenceKeypoint.new(0.56, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.70, Color3.fromRGB(0, 100, 255)),
-    ColorSequenceKeypoint.new(0.84, Color3.fromRGB(128, 0, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 128))
-}
-borderGradient.Rotation = 0
+borderGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0),
+    NumberSequenceKeypoint.new(0.5, 0),
+    NumberSequenceKeypoint.new(1, 0)
+})
+borderGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 127)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+})
 borderGradient.Parent = borderFrame
 
--- Animación del borde rainbow (más suave)
-local function animateRainbowBorder()
-    while screenGui.Parent do
-        for rotation = 0, 360, 1 do
-            if not screenGui.Parent then break end
-            borderGradient.Rotation = rotation
-            wait(0.03)
-        end
-    end
-end
+local borderStroke = Instance.new("UIStroke")
+borderStroke.Thickness = 3
+borderStroke.Color = Color3.fromRGB(0, 255, 127)
+borderStroke.Parent = mainFrame
 
-spawn(animateRainbowBorder)
+-- Animación del borde
+local borderTween = TweenService:Create(
+    borderGradient,
+    TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+    {Rotation = 360}
+)
+borderTween:Play()
 
--- Información del jugador - Container (más oscuro)
-local playerInfoFrame = Instance.new("Frame")
-playerInfoFrame.Name = "PlayerInfo"
-playerInfoFrame.Size = UDim2.new(1, -40, 0, 120)
-playerInfoFrame.Position = UDim2.new(0, 20, 0, 20)
-playerInfoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Más oscuro
-playerInfoFrame.BackgroundTransparency = 0
-playerInfoFrame.BorderSizePixel = 0
-playerInfoFrame.Parent = mainFrame
-
-local playerInfoCorner = Instance.new("UICorner")
-playerInfoCorner.CornerRadius = UDim.new(0, 16)
-playerInfoCorner.Parent = playerInfoFrame
-
--- Avatar del jugador
-local avatarFrame = Instance.new("Frame")
-avatarFrame.Size = UDim2.new(0, 80, 0, 80)
-avatarFrame.Position = UDim2.new(0, 15, 0, 20)
-avatarFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-avatarFrame.BorderSizePixel = 0
-avatarFrame.Parent = playerInfoFrame
-
-local avatarCorner = Instance.new("UICorner")
-avatarCorner.CornerRadius = UDim.new(0, 12)
-avatarCorner.Parent = avatarFrame
-
-local avatarImage = Instance.new("ImageLabel")
-avatarImage.Size = UDim2.new(1, 0, 1, 0)
-avatarImage.BackgroundTransparency = 1
-avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png"
-avatarImage.Parent = avatarFrame
-
-local avatarImageCorner = Instance.new("UICorner")
-avatarImageCorner.CornerRadius = UDim.new(0, 12)
-avatarImageCorner.Parent = avatarImage
-
--- Información de texto del jugador
-local playerNameLabel = Instance.new("TextLabel")
-playerNameLabel.Name = "PlayerName"
-playerNameLabel.Size = UDim2.new(1, -110, 0, 25)
-playerNameLabel.Position = UDim2.new(0, 105, 0, 20)
-playerNameLabel.BackgroundTransparency = 1
-playerNameLabel.Text = player.DisplayName
-playerNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-playerNameLabel.TextScaled = true
-playerNameLabel.TextXAlignment = Enum.TextXAlignment.Left
-playerNameLabel.Font = Enum.Font.GothamBold
-playerNameLabel.Parent = playerInfoFrame
-
-local playerUsernameLabel = Instance.new("TextLabel")
-playerUsernameLabel.Name = "PlayerUsername"
-playerUsernameLabel.Size = UDim2.new(1, -110, 0, 20)
-playerUsernameLabel.Position = UDim2.new(0, 105, 0, 45)
-playerUsernameLabel.BackgroundTransparency = 1
-playerUsernameLabel.Text = "@" .. player.Name
-playerUsernameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-playerUsernameLabel.TextScaled = true
-playerUsernameLabel.TextXAlignment = Enum.TextXAlignment.Left
-playerUsernameLabel.Font = Enum.Font.Gotham
-playerUsernameLabel.Parent = playerInfoFrame
-
--- Obtener información del país del jugador
-local countryCode = "US" -- Por defecto
-pcall(function()
-    local result = LocalizationService:GetCountryRegionForPlayerAsync(player)
-    countryCode = result
-end)
-
-local playerCountryLabel = Instance.new("TextLabel")
-playerCountryLabel.Name = "PlayerCountry"
-playerCountryLabel.Size = UDim2.new(1, -110, 0, 18)
-playerCountryLabel.Position = UDim2.new(0, 105, 0, 67)
-playerCountryLabel.BackgroundTransparency = 1
-playerCountryLabel.Text = "Country: " .. countryCode
-playerCountryLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
-playerCountryLabel.TextScaled = true
-playerCountryLabel.TextXAlignment = Enum.TextXAlignment.Left
-playerCountryLabel.Font = Enum.Font.Gotham
-playerCountryLabel.Parent = playerInfoFrame
-
-local playerStatusLabel = Instance.new("TextLabel")
-playerStatusLabel.Name = "PlayerStatus"
-playerStatusLabel.Size = UDim2.new(1, -110, 0, 18)
-playerStatusLabel.Position = UDim2.new(0, 105, 0, 85)
-playerStatusLabel.BackgroundTransparency = 1
-playerStatusLabel.Text = "Status: Premium User"
-playerStatusLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-playerStatusLabel.TextScaled = true
-playerStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-playerStatusLabel.Font = Enum.Font.Gotham
-playerStatusLabel.Parent = playerInfoFrame
-
--- Título principal (sin efecto rainbow)
+-- Título principal
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "MainTitle"
-titleLabel.Size = UDim2.new(1, -40, 0, 45)
-titleLabel.Position = UDim2.new(0, 20, 0, 160)
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Position = UDim2.new(0, 0, 0, 10)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "XM PANEL MX - STEAL A BRAINROT"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Text = "XM StealAbrainrot MX"
+titleLabel.TextColor3 = Color3.fromRGB(0, 255, 127)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = mainFrame
 
 -- Subtítulo
 local subtitleLabel = Instance.new("TextLabel")
-subtitleLabel.Name = "Subtitle"
-subtitleLabel.Size = UDim2.new(1, -40, 0, 25)
-subtitleLabel.Position = UDim2.new(0, 20, 0, 210)
+subtitleLabel.Name = "SubtitleLabel"
+subtitleLabel.Size = UDim2.new(1, 0, 0, 20)
+subtitleLabel.Position = UDim2.new(0, 0, 0, 50)
 subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Text = "(trial 3 days)"
-subtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+subtitleLabel.Text = "free trial 3 days"
+subtitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 subtitleLabel.TextScaled = true
 subtitleLabel.Font = Enum.Font.Gotham
 subtitleLabel.Parent = mainFrame
 
--- Línea decorativa (sin gradiente)
-local decorativeLine = Instance.new("Frame")
-decorativeLine.Size = UDim2.new(0, 60, 0, 3)
-decorativeLine.Position = UDim2.new(0.5, -30, 0, 250)
-decorativeLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-decorativeLine.BorderSizePixel = 0
-decorativeLine.Parent = mainFrame
+-- Frame de información del jugador
+local playerFrame = Instance.new("Frame")
+playerFrame.Name = "PlayerFrame"
+playerFrame.Size = UDim2.new(0.9, 0, 0, 120)
+playerFrame.Position = UDim2.new(0.05, 0, 0, 80)
+playerFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+playerFrame.BorderSizePixel = 0
+playerFrame.Parent = mainFrame
 
-local lineCorner = Instance.new("UICorner")
-lineCorner.CornerRadius = UDim.new(0, 2)
-lineCorner.Parent = decorativeLine
+local playerCorner = Instance.new("UICorner")
+playerCorner.CornerRadius = UDim.new(0, 10)
+playerCorner.Parent = playerFrame
 
--- Campo de entrada de clave (más oscuro)
-local keyInputFrame = Instance.new("Frame")
-keyInputFrame.Name = "KeyInputFrame"
-keyInputFrame.Size = UDim2.new(1, -40, 0, 50)
-keyInputFrame.Position = UDim2.new(0, 20, 0, 280)
-keyInputFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Más oscuro
-keyInputFrame.BackgroundTransparency = 0
-keyInputFrame.BorderSizePixel = 0
-keyInputFrame.Parent = mainFrame
+-- Avatar del jugador (headshot circular)
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Name = "AvatarImage"
+avatarImage.Size = UDim2.new(0, 80, 0, 80)
+avatarImage.Position = UDim2.new(0, 15, 0, 20)
+avatarImage.BackgroundTransparency = 1
+avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=150&height=150&format=png"
+avatarImage.Parent = playerFrame
 
-local inputCorner = Instance.new("UICorner")
-inputCorner.CornerRadius = UDim.new(0, 12)
-inputCorner.Parent = keyInputFrame
+-- Hacer el avatar circular
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatarImage
 
+-- Información del jugador
+local displayNameLabel = Instance.new("TextLabel")
+displayNameLabel.Name = "DisplayNameLabel"
+displayNameLabel.Size = UDim2.new(0.6, 0, 0, 25)
+displayNameLabel.Position = UDim2.new(0.3, 10, 0, 20)
+displayNameLabel.BackgroundTransparency = 1
+displayNameLabel.Text = player.DisplayName
+displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+displayNameLabel.TextScaled = true
+displayNameLabel.Font = Enum.Font.GothamBold
+displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+displayNameLabel.Parent = playerFrame
+
+local usernameLabel = Instance.new("TextLabel")
+usernameLabel.Name = "UsernameLabel"
+usernameLabel.Size = UDim2.new(0.6, 0, 0, 20)
+usernameLabel.Position = UDim2.new(0.3, 10, 0, 45)
+usernameLabel.BackgroundTransparency = 1
+usernameLabel.Text = "@" .. player.Name
+usernameLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+usernameLabel.TextScaled = true
+usernameLabel.Font = Enum.Font.Gotham
+usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
+usernameLabel.Parent = playerFrame
+
+-- Label del país (placeholder)
+local countryLabel = Instance.new("TextLabel")
+countryLabel.Name = "CountryLabel"
+countryLabel.Size = UDim2.new(0.6, 0, 0, 20)
+countryLabel.Position = UDim2.new(0.3, 10, 0, 70)
+countryLabel.BackgroundTransparency = 1
+countryLabel.Text = "Country: Unknown"
+countryLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+countryLabel.TextScaled = true
+countryLabel.Font = Enum.Font.Gotham
+countryLabel.TextXAlignment = Enum.TextXAlignment.Left
+countryLabel.Parent = playerFrame
+
+-- TextBox para la key
 local keyTextBox = Instance.new("TextBox")
-keyTextBox.Name = "KeyInput"
-keyTextBox.Size = UDim2.new(1, -20, 1, -10)
-keyTextBox.Position = UDim2.new(0, 10, 0, 5)
-keyTextBox.BackgroundTransparency = 1
-keyTextBox.PlaceholderText = "Insert Key"
-keyTextBox.PlaceholderColor3 = Color3.fromRGB(128, 128, 128)
+keyTextBox.Name = "KeyTextBox"
+keyTextBox.Size = UDim2.new(0.9, 0, 0, 40)
+keyTextBox.Position = UDim2.new(0.05, 0, 0, 220)
+keyTextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+keyTextBox.BorderSizePixel = 0
+keyTextBox.PlaceholderText = "paste your key here..."
+keyTextBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
 keyTextBox.Text = ""
 keyTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyTextBox.TextScaled = true
 keyTextBox.Font = Enum.Font.Gotham
-keyTextBox.ClearTextOnFocus = false
-keyTextBox.Parent = keyInputFrame
+keyTextBox.Parent = mainFrame
 
--- Botones
-local buttonContainer = Instance.new("Frame")
-buttonContainer.Name = "ButtonContainer"
-buttonContainer.Size = UDim2.new(1, -40, 0, 50)
-buttonContainer.Position = UDim2.new(0, 20, 0, 350)
-buttonContainer.BackgroundTransparency = 1
-buttonContainer.Parent = mainFrame
+local keyBoxCorner = Instance.new("UICorner")
+keyBoxCorner.CornerRadius = UDim.new(0, 8)
+keyBoxCorner.Parent = keyTextBox
 
 -- Botón Get Key
 local getKeyButton = Instance.new("TextButton")
 getKeyButton.Name = "GetKeyButton"
-getKeyButton.Size = UDim2.new(0.48, 0, 1, 0)
-getKeyButton.Position = UDim2.new(0, 0, 0, 0)
-getKeyButton.BackgroundColor3 = Color3.fromRGB(255, 107, 107)
+getKeyButton.Size = UDim2.new(0.43, 0, 0, 40)
+getKeyButton.Position = UDim2.new(0.05, 0, 0, 280)
+getKeyButton.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
 getKeyButton.BorderSizePixel = 0
-getKeyButton.Text = "GET KEY"
+getKeyButton.Text = "Get Key"
 getKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 getKeyButton.TextScaled = true
 getKeyButton.Font = Enum.Font.GothamBold
-getKeyButton.Parent = buttonContainer
+getKeyButton.Parent = mainFrame
 
 local getKeyCorner = Instance.new("UICorner")
-getKeyCorner.CornerRadius = UDim.new(0, 12)
+getKeyCorner.CornerRadius = UDim.new(0, 8)
 getKeyCorner.Parent = getKeyButton
-
-local getKeyGradient = Instance.new("UIGradient")
-getKeyGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 107, 107)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(238, 90, 36))
-}
-getKeyGradient.Rotation = 135
-getKeyGradient.Parent = getKeyButton
 
 -- Botón Submit
 local submitButton = Instance.new("TextButton")
 submitButton.Name = "SubmitButton"
-submitButton.Size = UDim2.new(0.48, 0, 1, 0)
-submitButton.Position = UDim2.new(0.52, 0, 0, 0)
-submitButton.BackgroundColor3 = Color3.fromRGB(0, 210, 255)
+submitButton.Size = UDim2.new(0.43, 0, 0, 40)
+submitButton.Position = UDim2.new(0.52, 0, 0, 280)
+submitButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 submitButton.BorderSizePixel = 0
-submitButton.Text = "SUBMIT"
+submitButton.Text = "Submit"
 submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitButton.TextScaled = true
 submitButton.Font = Enum.Font.GothamBold
-submitButton.Parent = buttonContainer
+submitButton.Parent = mainFrame
 
 local submitCorner = Instance.new("UICorner")
-submitCorner.CornerRadius = UDim.new(0, 12)
+submitCorner.CornerRadius = UDim.new(0, 8)
 submitCorner.Parent = submitButton
 
-local submitGradient = Instance.new("UIGradient")
-submitGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 210, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(55, 66, 250))
-}
-submitGradient.Rotation = 135
-submitGradient.Parent = submitButton
-
--- Toast de notificación (oscuro y aparece abajo)
-local function showToast(message)
+-- Función para crear toast
+local function createToast(message)
+    local toastGui = Instance.new("ScreenGui")
+    toastGui.Name = "ToastNotification"
+    toastGui.Parent = playerGui
+    
     local toastFrame = Instance.new("Frame")
-    toastFrame.Name = "Toast"
-    toastFrame.Size = UDim2.new(0, 400, 0, 80)
-    toastFrame.Position = UDim2.new(0.5, -200, 1, 50) -- Posición inicial un poco más arriba
-    toastFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Más oscuro
+    toastFrame.Size = UDim2.new(0, 400, 0, 60)
+    toastFrame.Position = UDim2.new(0.5, -200, 1, -150)
+    toastFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     toastFrame.BorderSizePixel = 0
-    toastFrame.Parent = screenGui
+    toastFrame.Parent = toastGui
     
     local toastCorner = Instance.new("UICorner")
-    toastCorner.CornerRadius = UDim.new(0, 16)
+    toastCorner.CornerRadius = UDim.new(0, 10)
     toastCorner.Parent = toastFrame
     
+    local toastStroke = Instance.new("UIStroke")
+    toastStroke.Thickness = 2
+    toastStroke.Color = Color3.fromRGB(0, 255, 127)
+    toastStroke.Parent = toastFrame
+    
     local toastLabel = Instance.new("TextLabel")
-    toastLabel.Size = UDim2.new(1, -20, 1, -20)
-    toastLabel.Position = UDim2.new(0, 10, 0, 10)
+    toastLabel.Size = UDim2.new(1, -20, 1, 0)
+    toastLabel.Position = UDim2.new(0, 10, 0, 0)
     toastLabel.BackgroundTransparency = 1
     toastLabel.Text = message
-    toastLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
+    toastLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     toastLabel.TextScaled = true
-    toastLabel.Font = Enum.Font.GothamBold
+    toastLabel.Font = Enum.Font.Gotham
     toastLabel.TextWrapped = true
     toastLabel.Parent = toastFrame
     
-    -- Animación de entrada desde abajo
-    local slideIn = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -200, 1, -120) -- Aparece un poco más arriba
-    })
-    slideIn:Play()
+    -- Animación de entrada
+    local tweenIn = TweenService:Create(
+        toastFrame,
+        TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, -200, 1, -210)}
+    )
+    tweenIn:Play()
     
-    -- Animación de salida después de 4 segundos
-    spawn(function()
-        wait(4)
-        local slideOut = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, -200, 1, 50) -- Se va abajo
-        })
-        slideOut:Play()
-        slideOut.Completed:Connect(function()
-            toastFrame:Destroy()
-        end)
-    end)
-end
-
--- Función para copiar al portapapeles (simulada con toast)
-local function copyToClipboard(text)
-    -- En Roblox no se puede copiar directamente al portapapeles por seguridad
-    -- Pero podemos mostrar el enlace en el toast para que el usuario lo copie manualmente
-    showToast("Key link copied to clipboard!\nPaste it in your preferred browser...\n" .. text)
-end
-
--- Efectos de hover para botones
-local function createHoverEffect(button, hoverColor, originalColor)
-    button.MouseEnter:Connect(function()
-        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor})
-        tween:Play()
-    end)
+    -- Esperar y hacer animación de salida
+    wait(3)
+    local tweenOut = TweenService:Create(
+        toastFrame,
+        TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Position = UDim2.new(0.5, -200, 1, -50)}
+    )
+    tweenOut:Play()
     
-    button.MouseLeave:Connect(function()
-        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor})
-        tween:Play()
+    tweenOut.Completed:Connect(function()
+        toastGui:Destroy()
     end)
 end
 
-createHoverEffect(getKeyButton, Color3.fromRGB(255, 82, 82), Color3.fromRGB(255, 107, 107))
-createHoverEffect(submitButton, Color3.fromRGB(0, 168, 255), Color3.fromRGB(0, 210, 255))
-
--- Funcionalidad del botón Get Key
+-- Función del botón Get Key
 getKeyButton.MouseButton1Click:Connect(function()
-    getKeyButton.Text = "GETTING KEY..."
+    local keyUrl = "https://zamasxmodder.github.io/PageFreeTrial3DaysKey/"
     
-    local originalSize = getKeyButton.Size
-    local pressTween = TweenService:Create(getKeyButton, TweenInfo.new(0.1), {Size = UDim2.new(0.46, 0, 0.9, 0)})
-    pressTween:Play()
+    -- Copiar al portapapeles (esto requiere que el juego tenga permisos)
+    pcall(function()
+        setclipboard(keyUrl)
+    end)
     
+    -- Mostrar toast
     spawn(function()
-        wait(0.1)
-        local releaseTween = TweenService:Create(getKeyButton, TweenInfo.new(0.1), {Size = originalSize})
-        releaseTween:Play()
-        
-        wait(1.5)
-        getKeyButton.Text = "GET KEY"
-        
-        -- Copiar enlace al "portapapeles" (mostrar en toast)
-        copyToClipboard("https://zamasxmodder.github.io/PageFreeTrial3DaysKey/")
+        createToast("Key copied to clipboard! Go to your preferred browser and paste it there...")
+    end)
+    
+    -- Animación del botón
+    local buttonTween = TweenService:Create(
+        getKeyButton,
+        TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+        {Size = UDim2.new(0.41, 0, 0, 38)}
+    )
+    buttonTween:Play()
+    
+    buttonTween.Completed:Connect(function()
+        local buttonTween2 = TweenService:Create(
+            getKeyButton,
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+            {Size = UDim2.new(0.43, 0, 0, 40)}
+        )
+        buttonTween2:Play()
     end)
 end)
 
--- Funcionalidad del botón Submit
+-- Función del botón Submit
 submitButton.MouseButton1Click:Connect(function()
-    local key = keyTextBox.Text
-    
-    if key == "" or key == nil then
-        submitButton.BackgroundColor3 = Color3.fromRGB(255, 71, 87)
-        submitButton.Text = "ENTER KEY FIRST!"
+    local keyText = keyTextBox.Text
+    if keyText ~= "" then
+        -- Aquí puedes agregar la lógica para validar la key
+        print("Key submitted: " .. keyText)
         
-        wait(2)
-        submitButton.BackgroundColor3 = Color3.fromRGB(0, 210, 255)
-        submitButton.Text = "SUBMIT"
-        return
+        -- Animación del botón
+        local buttonTween = TweenService:Create(
+            submitButton,
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+            {Size = UDim2.new(0.41, 0, 0, 38)}
+        )
+        buttonTween:Play()
+        
+        buttonTween.Completed:Connect(function()
+            local buttonTween2 = TweenService:Create(
+                submitButton,
+                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                {Size = UDim2.new(0.43, 0, 0, 40)}
+            )
+            buttonTween2:Play()
+        end)
+    else
+        spawn(function()
+            createToast("Please enter a valid key!")
+        end)
     end
-    
-    local originalSize = submitButton.Size
-    local pressTween = TweenService:Create(submitButton, TweenInfo.new(0.1), {Size = UDim2.new(0.46, 0, 0.9, 0)})
-    pressTween:Play()
-    
-    submitButton.Text = "VALIDATING..."
-    submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
-    
-    spawn(function()
-        wait(0.1)
-        local releaseTween = TweenService:Create(submitButton, TweenInfo.new(0.1), {Size = originalSize})
-        releaseTween:Play()
-        
-        wait(1.5)
-        submitButton.Text = "ACCESS GRANTED!"
-        submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
-        
-        showToast("Access granted! Welcome to XM Panel MX!")
-    end)
 end)
 
--- Animación de entrada del panel
-mainFrame.Size = UDim2.new(0, 0, 0, 0)
-mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+-- Efectos de hover para los botones
+getKeyButton.MouseEnter:Connect(function()
+    local hoverTween = TweenService:Create(
+        getKeyButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = Color3.fromRGB(0, 200, 100)}
+    )
+    hoverTween:Play()
+end)
 
-local entranceTween = TweenService:Create(mainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 450, 0, 600),
-    Position = UDim2.new(0.5, -225, 0.5, -300)
-})
-entranceTween:Play()
+getKeyButton.MouseLeave:Connect(function()
+    local hoverTween = TweenService:Create(
+        getKeyButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = Color3.fromRGB(0, 180, 90)}
+    )
+    hoverTween:Play()
+end)
 
--- REMOVIDO: Funcionalidad de arrastre (draggable) según tu solicitud
+submitButton.MouseEnter:Connect(function()
+    local hoverTween = TweenService:Create(
+        submitButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}
+    )
+    hoverTween:Play()
+end)
 
-print("XM Panel MX loaded successfully!")
-print("Created by ZamasXModder - Roblox GUI")
+submitButton.MouseLeave:Connect(function()
+    local hoverTween = TweenService:Create(
+        submitButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}
+    )
+    hoverTween:Play()
+end)
+
+print("XM StealAbrainrot MX GUI loaded successfully!")
