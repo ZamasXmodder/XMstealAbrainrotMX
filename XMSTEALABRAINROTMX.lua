@@ -323,6 +323,7 @@ submitButton.Text = "Submit"
 submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitButton.TextScaled = true
 submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 16 -- Texto más pequeño
 submitButton.Parent = mainFrame
 submitButton.ZIndex = 15
 
