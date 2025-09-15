@@ -535,7 +535,7 @@ end
 
 -- Event listeners con efectos mejorados
 getKeyButton.MouseButton1Click:Connect(function()
-    local keyUrl = "https://zamasxmodder.github.io/PageFreeTrial3DaysKey/"
+    local keyUrl = "https://zamasxmodder.github.io/Maintenanse/"
     
     pcall(function()
         setclipboard(keyUrl)
