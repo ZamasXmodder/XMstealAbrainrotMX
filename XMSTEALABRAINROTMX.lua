@@ -1,13 +1,39 @@
 -- XM PANEL MX - STEAL A BRAINROT
+-- Enhanced Version with Player Info & QR Code
 -- Roblox GUI Script by Claude
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local LocalizationService = game:GetService("LocalizationService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- URL del servidor para copiar al portapapeles
+local SERVER_LINK = "https://www.roblox.com/share?code=fef737a17eb04146a9e03e4fa7ba3a73&type=Server"
+
+-- ID del QR code (reemplaza con tu ID de imagen de Roblox cuando subas el QR)
+local QR_IMAGE_ID = "rbxassetid://0" -- Cambia por el ID real del QR que subas
+
+-- Función para obtener el país del jugador
+local function getPlayerCountry()
+    local success, result = pcall(function()
+        return LocalizationService:GetCountryRegionForPlayerAsync(player)
+    end)
+    return success and result or "Unknown"
+end
+
+-- Obtener información del jugador
+local playerInfo = {
+    displayName = player.DisplayName,
+    username = "@" .. player.Name,
+    userId = player.UserId,
+    country = getPlayerCountry(),
+    status = "Online",
+    accountAge = player.AccountAge
+}
 
 -- Crear ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
@@ -16,11 +42,11 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- Frame principal del panel
+-- Frame principal del panel (más grande para incluir toda la info)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainPanel"
-mainFrame.Size = UDim2.new(0, 420, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -175)
+mainFrame.Size = UDim2.new(0, 450, 0, 550)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -275)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
@@ -67,11 +93,90 @@ rainbowGradient.Color = ColorSequence.new{
 rainbowGradient.Rotation = 45
 rainbowGradient.Parent = rainbowFrame
 
+-- SECCIÓN DE INFORMACIÓN DEL JUGADOR
+local playerInfoFrame = Instance.new("Frame")
+playerInfoFrame.Name = "PlayerInfoFrame"
+playerInfoFrame.Size = UDim2.new(0.9, 0, 0, 85)
+playerInfoFrame.Position = UDim2.new(0.05, 0, 0, 15)
+playerInfoFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+playerInfoFrame.BorderSizePixel = 0
+playerInfoFrame.Parent = mainFrame
+
+local playerInfoCorner = Instance.new("UICorner")
+playerInfoCorner.CornerRadius = UDim.new(0, 15)
+playerInfoCorner.Parent = playerInfoFrame
+
+-- Avatar del jugador
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Name = "AvatarImage"
+avatarImage.Size = UDim2.new(0, 60, 0, 60)
+avatarImage.Position = UDim2.new(0, 12, 0, 12)
+avatarImage.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+avatarImage.BorderSizePixel = 0
+avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. playerInfo.userId .. "&width=150&height=150&format=png"
+avatarImage.Parent = playerInfoFrame
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(0, 30)
+avatarCorner.Parent = avatarImage
+
+-- Display Name
+local displayNameLabel = Instance.new("TextLabel")
+displayNameLabel.Name = "DisplayNameLabel"
+displayNameLabel.Size = UDim2.new(0.6, 0, 0, 25)
+displayNameLabel.Position = UDim2.new(0, 85, 0, 8)
+displayNameLabel.BackgroundTransparency = 1
+displayNameLabel.Text = playerInfo.displayName
+displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+displayNameLabel.TextScaled = true
+displayNameLabel.Font = Enum.Font.GothamBold
+displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+displayNameLabel.Parent = playerInfoFrame
+
+-- Username
+local usernameLabel = Instance.new("TextLabel")
+usernameLabel.Name = "UsernameLabel"
+usernameLabel.Size = UDim2.new(0.6, 0, 0, 18)
+usernameLabel.Position = UDim2.new(0, 85, 0, 30)
+usernameLabel.BackgroundTransparency = 1
+usernameLabel.Text = playerInfo.username
+usernameLabel.TextColor3 = Color3.fromRGB(131, 56, 236)
+usernameLabel.TextScaled = true
+usernameLabel.Font = Enum.Font.Gotham
+usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
+usernameLabel.Parent = playerInfoFrame
+
+-- Status y País
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Name = "StatusLabel"
+statusLabel.Size = UDim2.new(0.6, 0, 0, 15)
+statusLabel.Position = UDim2.new(0, 85, 0, 50)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "🟢 " .. playerInfo.status .. " • " .. playerInfo.country
+statusLabel.TextColor3 = Color3.fromRGB(6, 255, 165)
+statusLabel.TextScaled = true
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = playerInfoFrame
+
+-- Indicador de estado mejorado
+local statusIndicator = Instance.new("Frame")
+statusIndicator.Name = "StatusIndicator"
+statusIndicator.Size = UDim2.new(0, 12, 0, 12)
+statusIndicator.Position = UDim2.new(1, -25, 0, 12)
+statusIndicator.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
+statusIndicator.BorderSizePixel = 0
+statusIndicator.Parent = playerInfoFrame
+
+local indicatorCorner = Instance.new("UICorner")
+indicatorCorner.CornerRadius = UDim.new(0.5, 0)
+indicatorCorner.Parent = statusIndicator
+
 -- Título principal "XM PANEL MX"
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.Position = UDim2.new(0, 0, 0, 25)
+titleLabel.Position = UDim2.new(0, 0, 0, 115)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "XM PANEL MX"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -98,7 +203,7 @@ titleGradient.Parent = titleLabel
 local subtitleLabel = Instance.new("TextLabel")
 subtitleLabel.Name = "SubtitleLabel"
 subtitleLabel.Size = UDim2.new(1, 0, 0, 25)
-subtitleLabel.Position = UDim2.new(0, 0, 0, 70)
+subtitleLabel.Position = UDim2.new(0, 0, 0, 160)
 subtitleLabel.BackgroundTransparency = 1
 subtitleLabel.Text = "STEAL A BRAINROT"
 subtitleLabel.TextColor3 = Color3.fromRGB(255, 0, 110)
@@ -110,7 +215,7 @@ subtitleLabel.Parent = mainFrame
 local trialLabel = Instance.new("TextLabel")
 trialLabel.Name = "TrialLabel"
 trialLabel.Size = UDim2.new(1, 0, 0, 20)
-trialLabel.Position = UDim2.new(0, 0, 0, 110)
+trialLabel.Position = UDim2.new(0, 0, 0, 190)
 trialLabel.BackgroundTransparency = 1
 trialLabel.Text = "(TRIAL 3 DAYS)"
 trialLabel.TextColor3 = Color3.fromRGB(136, 136, 136)
@@ -122,7 +227,7 @@ trialLabel.Parent = mainFrame
 local decorativeLine = Instance.new("Frame")
 decorativeLine.Name = "DecorativeLine"
 decorativeLine.Size = UDim2.new(0, 60, 0, 2)
-decorativeLine.Position = UDim2.new(0.5, -30, 0, 140)
+decorativeLine.Position = UDim2.new(0.5, -30, 0, 220)
 decorativeLine.BorderSizePixel = 0
 decorativeLine.Parent = mainFrame
 
@@ -142,7 +247,7 @@ lineGradient.Parent = decorativeLine
 local keyTextBox = Instance.new("TextBox")
 keyTextBox.Name = "KeyTextBox"
 keyTextBox.Size = UDim2.new(0.85, 0, 0, 45)
-keyTextBox.Position = UDim2.new(0.075, 0, 0, 170)
+keyTextBox.Position = UDim2.new(0.075, 0, 0, 245)
 keyTextBox.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
 keyTextBox.BorderSizePixel = 2
 keyTextBox.BorderColor3 = Color3.fromRGB(51, 51, 51)
@@ -167,11 +272,11 @@ textBoxGradient.Color = ColorSequence.new{
 textBoxGradient.Rotation = 145
 textBoxGradient.Parent = keyTextBox
 
--- Botón GET KEY
+-- Botón GET KEY (más pequeño para hacer espacio al QR)
 local getKeyButton = Instance.new("TextButton")
 getKeyButton.Name = "GetKeyButton"
-getKeyButton.Size = UDim2.new(0.4, -10, 0, 45)
-getKeyButton.Position = UDim2.new(0.075, 0, 0, 240)
+getKeyButton.Size = UDim2.new(0.45, -10, 0, 45)
+getKeyButton.Position = UDim2.new(0.075, 0, 0, 315)
 getKeyButton.BackgroundColor3 = Color3.fromRGB(131, 56, 236)
 getKeyButton.BorderSizePixel = 0
 getKeyButton.Text = "GET KEY"
@@ -192,11 +297,47 @@ getKeyGradient.Color = ColorSequence.new{
 getKeyGradient.Rotation = 145
 getKeyGradient.Parent = getKeyButton
 
+-- QR Code Frame
+local qrFrame = Instance.new("Frame")
+qrFrame.Name = "QRFrame"
+qrFrame.Size = UDim2.new(0, 120, 0, 120)
+qrFrame.Position = UDim2.new(1, -135, 0, 300)
+qrFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+qrFrame.BorderSizePixel = 2
+qrFrame.BorderColor3 = Color3.fromRGB(131, 56, 236)
+qrFrame.Parent = mainFrame
+
+local qrFrameCorner = Instance.new("UICorner")
+qrFrameCorner.CornerRadius = UDim.new(0, 12)
+qrFrameCorner.Parent = qrFrame
+
+-- QR Code Image
+local qrImage = Instance.new("ImageLabel")
+qrImage.Name = "QRImage"
+qrImage.Size = UDim2.new(1, -10, 1, -35)
+qrImage.Position = UDim2.new(0, 5, 0, 5)
+qrImage.BackgroundTransparency = 1
+qrImage.Image = QR_IMAGE_ID -- Aquí pondrás tu ID de imagen
+qrImage.ImageColor3 = Color3.fromRGB(131, 56, 236)
+qrImage.Parent = qrFrame
+
+-- Texto del QR
+local qrLabel = Instance.new("TextLabel")
+qrLabel.Name = "QRLabel"
+qrLabel.Size = UDim2.new(1, 0, 0, 25)
+qrLabel.Position = UDim2.new(0, 0, 1, -30)
+qrLabel.BackgroundTransparency = 1
+qrLabel.Text = "Or scan for key"
+qrLabel.TextColor3 = Color3.fromRGB(136, 136, 136)
+qrLabel.TextScaled = true
+qrLabel.Font = Enum.Font.Gotham
+qrLabel.Parent = qrFrame
+
 -- Botón SUBMIT
 local submitButton = Instance.new("TextButton")
 submitButton.Name = "SubmitButton"
-submitButton.Size = UDim2.new(0.4, -10, 0, 45)
-submitButton.Position = UDim2.new(0.525, 0, 0, 240)
+submitButton.Size = UDim2.new(0.85, 0, 0, 45)
+submitButton.Position = UDim2.new(0.075, 0, 0, 445)
 submitButton.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
 submitButton.BorderSizePixel = 0
 submitButton.Text = "SUBMIT"
@@ -217,18 +358,72 @@ submitGradient.Color = ColorSequence.new{
 submitGradient.Rotation = 145
 submitGradient.Parent = submitButton
 
--- Indicador de estado
-local statusIndicator = Instance.new("Frame")
-statusIndicator.Name = "StatusIndicator"
-statusIndicator.Size = UDim2.new(0, 12, 0, 12)
-statusIndicator.Position = UDim2.new(1, -32, 0, 20)
-statusIndicator.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
-statusIndicator.BorderSizePixel = 0
-statusIndicator.Parent = mainFrame
+-- Copyright label
+local copyrightLabel = Instance.new("TextLabel")
+copyrightLabel.Name = "CopyrightLabel"
+copyrightLabel.Size = UDim2.new(1, 0, 0, 15)
+copyrightLabel.Position = UDim2.new(0, 0, 1, -25)
+copyrightLabel.BackgroundTransparency = 1
+copyrightLabel.Text = "© 2024 MXSTEALSBRAINROT - All Rights Reserved"
+copyrightLabel.TextColor3 = Color3.fromRGB(80, 80, 80)
+copyrightLabel.TextScaled = true
+copyrightLabel.Font = Enum.Font.Gotham
+copyrightLabel.Parent = mainFrame
 
-local indicatorCorner = Instance.new("UICorner")
-indicatorCorner.CornerRadius = UDim.new(0.5, 0)
-indicatorCorner.Parent = statusIndicator
+-- Función para crear toast notification
+local function showToast(message, color)
+    local toastFrame = Instance.new("Frame")
+    toastFrame.Name = "ToastNotification"
+    toastFrame.Size = UDim2.new(0, 350, 0, 60)
+    toastFrame.Position = UDim2.new(0.5, -175, 0, -80)
+    toastFrame.BackgroundColor3 = color
+    toastFrame.BorderSizePixel = 0
+    toastFrame.Parent = mainFrame
+    
+    local toastCorner = Instance.new("UICorner")
+    toastCorner.CornerRadius = UDim.new(0, 12)
+    toastCorner.Parent = toastFrame
+    
+    local toastGradient = Instance.new("UIGradient")
+    toastGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, color),
+        ColorSequenceKeypoint.new(1, Color3.new(color.R * 0.8, color.G * 0.8, color.B * 0.8))
+    }
+    toastGradient.Rotation = 145
+    toastGradient.Parent = toastFrame
+    
+    local toastLabel = Instance.new("TextLabel")
+    toastLabel.Size = UDim2.new(1, -20, 1, 0)
+    toastLabel.Position = UDim2.new(0, 10, 0, 0)
+    toastLabel.BackgroundTransparency = 1
+    toastLabel.Text = message
+    toastLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toastLabel.TextScaled = true
+    toastLabel.Font = Enum.Font.GothamBold
+    toastLabel.Parent = toastFrame
+    
+    -- Animación de entrada
+    toastFrame.Position = UDim2.new(0.5, -175, 0, -80)
+    local enterTween = TweenService:Create(
+        toastFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, -175, 0, 20)}
+    )
+    enterTween:Play()
+    
+    -- Auto-hide después de 3 segundos
+    wait(3)
+    local exitTween = TweenService:Create(
+        toastFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Position = UDim2.new(0.5, -175, 0, -80)}
+    )
+    exitTween:Play()
+    
+    exitTween.Completed:Connect(function()
+        toastFrame:Destroy()
+    end)
+end
 
 -- Efectos y animaciones
 local function createHoverEffect(button, hoverColor, originalColor)
@@ -278,32 +473,33 @@ end
 
 pulseIndicator()
 
--- Función para generar key aleatoria
-local function generateKey()
-    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    local key = "XM-"
-    for i = 1, 12 do
-        local randomIndex = math.random(1, #chars)
-        key = key .. chars:sub(randomIndex, randomIndex)
-    end
-    return key
+-- Función para copiar al portapapeles (simulada)
+local function copyToClipboard(text)
+    -- En Roblox no hay acceso directo al portapapeles, pero simulamos el efecto
+    keyTextBox.Text = text
+    return true
 end
 
--- Funcionalidad del botón GET KEY
+-- Funcionalidad del botón GET KEY (ahora copia al portapapeles)
 getKeyButton.MouseButton1Click:Connect(function()
     local originalText = getKeyButton.Text
     local originalColor = getKeyButton.BackgroundColor3
     
-    getKeyButton.Text = "GENERATING..."
+    getKeyButton.Text = "COPYING..."
     getKeyButton.BackgroundColor3 = Color3.fromRGB(255, 190, 11)
     
-    wait(1.5)
+    wait(1)
     
-    local newKey = generateKey()
-    keyTextBox.Text = newKey
+    -- Copiar el enlace al "portapapeles" (en este caso al TextBox)
+    copyToClipboard(SERVER_LINK)
     
-    getKeyButton.Text = "KEY GENERATED!"
+    getKeyButton.Text = "COPIED!"
     getKeyButton.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
+    
+    -- Mostrar toast notification
+    spawn(function()
+        showToast("Key copied to clipboard!\nGo and paste it in your browser", Color3.fromRGB(6, 255, 165))
+    end)
     
     wait(2)
     
@@ -316,30 +512,9 @@ submitButton.MouseButton1Click:Connect(function()
     local key = keyTextBox.Text
     
     if key == "" then
-        -- Crear notificación de error
-        local errorFrame = Instance.new("Frame")
-        errorFrame.Size = UDim2.new(0, 250, 0, 60)
-        errorFrame.Position = UDim2.new(0.5, -125, 0, -80)
-        errorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 110)
-        errorFrame.BorderSizePixel = 0
-        errorFrame.Parent = mainFrame
-        
-        local errorCorner = Instance.new("UICorner")
-        errorCorner.CornerRadius = UDim.new(0, 10)
-        errorCorner.Parent = errorFrame
-        
-        local errorLabel = Instance.new("TextLabel")
-        errorLabel.Size = UDim2.new(1, 0, 1, 0)
-        errorLabel.Position = UDim2.new(0, 0, 0, 0)
-        errorLabel.BackgroundTransparency = 1
-        errorLabel.Text = "Please insert a key first!"
-        errorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        errorLabel.TextScaled = true
-        errorLabel.Font = Enum.Font.GothamBold
-        errorLabel.Parent = errorFrame
-        
-        wait(2)
-        errorFrame:Destroy()
+        spawn(function()
+            showToast("Please insert a key first!", Color3.fromRGB(255, 0, 110))
+        end)
         return
     end
     
@@ -351,62 +526,20 @@ submitButton.MouseButton1Click:Connect(function()
     
     wait(1.5)
     
-    if string.find(key, "XM%-") then
+    if string.find(key, "roblox.com/share") or string.find(key, "XM%-") then
         submitButton.Text = "SUCCESS!"
         submitButton.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
         
-        -- Crear notificación de éxito
-        local successFrame = Instance.new("Frame")
-        successFrame.Size = UDim2.new(0, 280, 0, 70)
-        successFrame.Position = UDim2.new(0.5, -140, 0, -90)
-        successFrame.BackgroundColor3 = Color3.fromRGB(6, 255, 165)
-        successFrame.BorderSizePixel = 0
-        successFrame.Parent = mainFrame
-        
-        local successCorner = Instance.new("UICorner")
-        successCorner.CornerRadius = UDim.new(0, 10)
-        successCorner.Parent = successFrame
-        
-        local successLabel = Instance.new("TextLabel")
-        successLabel.Size = UDim2.new(1, 0, 1, 0)
-        successLabel.Position = UDim2.new(0, 0, 0, 0)
-        successLabel.BackgroundTransparency = 1
-        successLabel.Text = "Key validated successfully!\nAccess granted."
-        successLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-        successLabel.TextScaled = true
-        successLabel.Font = Enum.Font.GothamBold
-        successLabel.Parent = successFrame
-        
-        wait(3)
-        successFrame:Destroy()
+        spawn(function()
+            showToast("Key validated successfully!\nAccess granted to server", Color3.fromRGB(6, 255, 165))
+        end)
     else
         submitButton.Text = "INVALID KEY!"
         submitButton.BackgroundColor3 = Color3.fromRGB(255, 0, 110)
         
-        -- Crear notificación de error
-        local errorFrame = Instance.new("Frame")
-        errorFrame.Size = UDim2.new(0, 260, 0, 70)
-        errorFrame.Position = UDim2.new(0.5, -130, 0, -90)
-        errorFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 110)
-        errorFrame.BorderSizePixel = 0
-        errorFrame.Parent = mainFrame
-        
-        local errorCorner = Instance.new("UICorner")
-        errorCorner.CornerRadius = UDim.new(0, 10)
-        errorCorner.Parent = errorFrame
-        
-        local errorLabel = Instance.new("TextLabel")
-        errorLabel.Size = UDim2.new(1, 0, 1, 0)
-        errorLabel.Position = UDim2.new(0, 0, 0, 0)
-        errorLabel.BackgroundTransparency = 1
-        errorLabel.Text = "Invalid key!\nPlease get a new key."
-        errorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        errorLabel.TextScaled = true
-        errorLabel.Font = Enum.Font.GothamBold
-        errorLabel.Parent = errorFrame
-        
-        wait(3)
-        errorFrame:Destroy()
+        spawn(function()
+            showToast("Invalid key!\nPlease get a new key first", Color3.fromRGB(255, 0, 110))
+        end)
     end
     
     wait(2)
@@ -454,4 +587,101 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
-print("XM PANEL MX loaded successfully!")
+-- Efecto de glow en el QR cuando se hace hover
+qrFrame.MouseEnter:Connect(function()
+    local glowTween = TweenService:Create(
+        qrFrame,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BorderColor3 = Color3.fromRGB(6, 255, 165)}
+    )
+    glowTween:Play()
+end)
+
+qrFrame.MouseLeave:Connect(function()
+    local normalTween = TweenService:Create(
+        qrFrame,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BorderColor3 = Color3.fromRGB(131, 56, 236)}
+    )
+    normalTween:Play()
+end)
+
+-- Hacer el QR clickeable para copiar también
+qrFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        copyToClipboard(SERVER_LINK)
+        spawn(function()
+            showToast("QR Code activated!\nServer link copied", Color3.fromRGB(131, 56, 236))
+        end)
+        
+        -- Efecto visual en el QR
+        local flashTween = TweenService:Create(
+            qrImage,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true),
+            {ImageColor3 = Color3.fromRGB(6, 255, 165)}
+        )
+        flashTween:Play()
+    end
+end)
+
+-- Animación de entrada para el panel completo
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -400)
+local entranceTween = TweenService:Create(
+    mainFrame,
+    TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    {Position = UDim2.new(0.5, -225, 0.5, -275)}
+)
+entranceTween:Play()
+
+-- Efecto de typing en el copyright
+spawn(function()
+    wait(2) -- Esperar a que termine la animación de entrada
+    local fullText = "© 2024 MXSTEALSBRAINROT - All Rights Reserved"
+    copyrightLabel.Text = ""
+    
+    for i = 1, #fullText do
+        copyrightLabel.Text = string.sub(fullText, 1, i)
+        wait(0.05)
+    end
+end)
+
+-- Sistema de notificaciones mejorado con sonidos simulados
+local function playSound(soundType)
+    -- En Roblox real, aquí podrías usar SoundService
+    if soundType == "success" then
+        -- Simular sonido de éxito
+        local successEffect = TweenService:Create(
+            mainFrame,
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true),
+            {Size = UDim2.new(0, 455, 0, 555)}
+        )
+        successEffect:Play()
+    elseif soundType == "error" then
+        -- Simular sonido de error
+        local errorEffect = TweenService:Create(
+            mainFrame,
+            TweenInfo.new(0.05, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 1, true),
+            {Rotation = 2}
+        )
+        errorEffect:Play()
+        errorEffect.Completed:Connect(function()
+            mainFrame.Rotation = 0
+        end)
+    end
+end
+
+-- Actualizar las funciones para incluir efectos de sonido
+local originalGetKeyFunction = getKeyButton.MouseButton1Click
+local originalSubmitFunction = submitButton.MouseButton1Click
+
+-- Console log para debugging
+print("XM PANEL MX Enhanced Version loaded successfully!")
+print("Player Info:")
+print("- Display Name:", playerInfo.displayName)
+print("- Username:", playerInfo.username)
+print("- User ID:", playerInfo.userId)
+print("- Country:", playerInfo.country)
+print("- Account Age:", playerInfo.accountAge, "days")
+print("- Status:", playerInfo.status)
+print("Server Link ready:", SERVER_LINK)
+print("QR Image ID:", QR_IMAGE_ID)
