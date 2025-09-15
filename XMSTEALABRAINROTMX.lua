@@ -17,13 +17,13 @@ screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
--- Frame principal del panel
+-- Frame principal del panel (más oscuro)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainPanel"
 mainFrame.Size = UDim2.new(0, 450, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -300)
-mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-mainFrame.BackgroundTransparency = 0.05
+mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8) -- Más oscuro
+mainFrame.BackgroundTransparency = 0
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
@@ -32,54 +32,55 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 24)
 mainCorner.Parent = mainFrame
 
--- Borde rainbow animado
+-- Borde rainbow animado (más grueso)
 local borderFrame = Instance.new("Frame")
 borderFrame.Name = "RainbowBorder"
-borderFrame.Size = UDim2.new(1, 4, 1, 4)
-borderFrame.Position = UDim2.new(0, -2, 0, -2)
+borderFrame.Size = UDim2.new(1, 8, 1, 8) -- Borde más grueso
+borderFrame.Position = UDim2.new(0, -4, 0, -4)
 borderFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 128)
 borderFrame.BorderSizePixel = 0
 borderFrame.ZIndex = mainFrame.ZIndex - 1
 borderFrame.Parent = mainFrame
 
 local borderCorner = Instance.new("UICorner")
-borderCorner.CornerRadius = UDim.new(0, 26)
+borderCorner.CornerRadius = UDim.new(0, 28)
 borderCorner.Parent = borderFrame
 
--- Gradiente rainbow para el borde
+-- Gradiente rainbow para el borde (más vibrante)
 local borderGradient = Instance.new("UIGradient")
 borderGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
-    ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 140, 0)),
-    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 215, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 128)),
-    ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(0, 128, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 255))
+    ColorSequenceKeypoint.new(0.14, Color3.fromRGB(255, 69, 0)),
+    ColorSequenceKeypoint.new(0.28, Color3.fromRGB(255, 215, 0)),
+    ColorSequenceKeypoint.new(0.42, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.56, Color3.fromRGB(0, 255, 255)),
+    ColorSequenceKeypoint.new(0.70, Color3.fromRGB(0, 100, 255)),
+    ColorSequenceKeypoint.new(0.84, Color3.fromRGB(128, 0, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 128))
 }
-borderGradient.Rotation = 45
+borderGradient.Rotation = 0
 borderGradient.Parent = borderFrame
 
--- Animación del borde rainbow
+-- Animación del borde rainbow (más suave)
 local function animateRainbowBorder()
     while screenGui.Parent do
-        for rotation = 0, 360, 2 do
+        for rotation = 0, 360, 1 do
             if not screenGui.Parent then break end
             borderGradient.Rotation = rotation
-            wait(0.05)
+            wait(0.03)
         end
     end
 end
 
 spawn(animateRainbowBorder)
 
--- Información del jugador - Container
+-- Información del jugador - Container (más oscuro)
 local playerInfoFrame = Instance.new("Frame")
 playerInfoFrame.Name = "PlayerInfo"
 playerInfoFrame.Size = UDim2.new(1, -40, 0, 120)
 playerInfoFrame.Position = UDim2.new(0, 20, 0, 20)
-playerInfoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-playerInfoFrame.BackgroundTransparency = 0.2
+playerInfoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Más oscuro
+playerInfoFrame.BackgroundTransparency = 0
 playerInfoFrame.BorderSizePixel = 0
 playerInfoFrame.Parent = mainFrame
 
@@ -91,7 +92,7 @@ playerInfoCorner.Parent = playerInfoFrame
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 80, 0, 80)
 avatarFrame.Position = UDim2.new(0, 15, 0, 20)
-avatarFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+avatarFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 avatarFrame.BorderSizePixel = 0
 avatarFrame.Parent = playerInfoFrame
 
@@ -237,13 +238,13 @@ lineGradient.Color = ColorSequence.new{
 }
 lineGradient.Parent = decorativeLine
 
--- Campo de entrada de clave
+-- Campo de entrada de clave (más oscuro)
 local keyInputFrame = Instance.new("Frame")
 keyInputFrame.Name = "KeyInputFrame"
 keyInputFrame.Size = UDim2.new(1, -40, 0, 50)
 keyInputFrame.Position = UDim2.new(0, 20, 0, 280)
-keyInputFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-keyInputFrame.BackgroundTransparency = 0.2
+keyInputFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Más oscuro
+keyInputFrame.BackgroundTransparency = 0
 keyInputFrame.BorderSizePixel = 0
 keyInputFrame.Parent = mainFrame
 
@@ -323,13 +324,13 @@ submitGradient.Color = ColorSequence.new{
 submitGradient.Rotation = 135
 submitGradient.Parent = submitButton
 
--- Toast de notificación
+-- Toast de notificación (oscuro y aparece abajo)
 local function showToast(message)
     local toastFrame = Instance.new("Frame")
     toastFrame.Name = "Toast"
     toastFrame.Size = UDim2.new(0, 400, 0, 80)
-    toastFrame.Position = UDim2.new(0.5, -200, 0, -100)
-    toastFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    toastFrame.Position = UDim2.new(0.5, -200, 1, 100) -- Posición inicial abajo fuera de pantalla
+    toastFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Más oscuro
     toastFrame.BorderSizePixel = 0
     toastFrame.Parent = screenGui
     
@@ -348,9 +349,9 @@ local function showToast(message)
     toastLabel.TextWrapped = true
     toastLabel.Parent = toastFrame
     
-    -- Animación de entrada
+    -- Animación de entrada desde abajo
     local slideIn = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -200, 0, 20)
+        Position = UDim2.new(0.5, -200, 1, -100) -- Aparece abajo
     })
     slideIn:Play()
     
@@ -358,7 +359,7 @@ local function showToast(message)
     spawn(function()
         wait(4)
         local slideOut = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, -200, 0, -100)
+            Position = UDim2.new(0.5, -200, 1, 100) -- Se va abajo
         })
         slideOut:Play()
         slideOut.Completed:Connect(function()
@@ -455,43 +456,7 @@ local entranceTween = TweenService:Create(mainFrame, TweenInfo.new(0.8, Enum.Eas
 })
 entranceTween:Play()
 
--- Hacer el panel draggable (arrastrable)
-local UserInputService = game:GetService("UserInputService")
-local dragging
-local dragInput
-local dragStart
-local startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
+-- REMOVIDO: Funcionalidad de arrastre (draggable) según tu solicitud
 
 print("XM Panel MX loaded successfully!")
 print("Created by ZamasXModder - Roblox GUI")
