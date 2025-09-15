@@ -1,4 +1,4 @@
--- XM StealAbrainrot MX GUI Panel - Enhanced Version
+-- XM StealAbrainrot MX GUI Panel - Fixed Version
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -9,12 +9,21 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- Función para debug
+local function debugPrint(message)
+    print("[XM GUI Debug] " .. tostring(message))
+end
+
+debugPrint("Starting GUI creation...")
+
 -- Crear ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XMStealAbrainrotPanel"
 screenGui.Parent = playerGui
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.DisplayOrder = 100
+
+debugPrint("ScreenGui created")
 
 -- GUI de fondo que cubre toda la pantalla
 local backgroundGui = Instance.new("Frame")
@@ -37,107 +46,11 @@ backgroundGradient.Transparency = NumberSequence.new({
 backgroundGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 25)),
     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)),
-    ColorSequence Keypoint.new(1, Color3.fromRGB(0, 50, 25))
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 50, 25))
 })
 backgroundGradient.Parent = backgroundGui
 
--- Función para crear partículas flotantes
-local function createFloatingParticles()
-    for i = 1, 25 do
-        local particle = Instance.new("Frame")
-        particle.Name = "Particle" .. i
-        particle.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
-        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
-        particle.BackgroundColor3 = Color3.fromRGB(0, math.random(150, 255), math.random(100, 200))
-        particle.BorderSizePixel = 0
-        particle.BackgroundTransparency = math.random(30, 70) / 100
-        particle.Parent = backgroundGui
-        particle.ZIndex = 2
-        
-        local particleCorner = Instance.new("UICorner")
-        particleCorner.CornerRadius = UDim.new(1, 0)
-        particleCorner.Parent = particle
-        
-        -- Animación flotante continua
-        local floatTween = TweenService:Create(
-            particle,
-            TweenInfo.new(math.random(8, 15), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {
-                Position = UDim2.new(
-                    math.random() * 0.8 + 0.1,
-                    0,
-                    math.random() * 0.8 + 0.1,
-                    0
-                ),
-                BackgroundTransparency = math.random(10, 90) / 100
-            }
-        )
-        floatTween:Play()
-        
-        -- Rotación sutil
-        local rotateTween = TweenService:Create(
-            particle,
-            TweenInfo.new(math.random(3, 6), Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
-            {Rotation = 360}
-        )
-        rotateTween:Play()
-    end
-end
-
--- Crear decoraciones en las esquinas
-local function createCornerDecorations()
-    local corners = {
-        {UDim2.new(0, 20, 0, 20), "TopLeft"},
-        {UDim2.new(1, -120, 0, 20), "TopRight"},
-        {UDim2.new(0, 20, 1, -120), "BottomLeft"},
-        {UDim2.new(1, -120, 1, -120), "BottomRight"}
-    }
-    
-    for _, corner in pairs(corners) do
-        local decorFrame = Instance.new("Frame")
-        decorFrame.Name = corner[2] .. "Decoration"
-        decorFrame.Size = UDim2.new(0, 100, 0, 100)
-        decorFrame.Position = corner[1]
-        decorFrame.BackgroundTransparency = 1
-        decorFrame.Parent = backgroundGui
-        decorFrame.ZIndex = 2
-        
-        -- Crear círculos concéntricos
-        for i = 1, 3 do
-            local circle = Instance.new("Frame")
-            circle.Name = "Circle" .. i
-            circle.Size = UDim2.new(0, 30 + (i * 20), 0, 30 + (i * 20))
-            circle.Position = UDim2.new(0.5, -(15 + i * 10), 0.5, -(15 + i * 10))
-            circle.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
-            circle.BackgroundTransparency = 0.3 + (i * 0.2)
-            circle.BorderSizePixel = 0
-            circle.Parent = decorFrame
-            
-            local circleCorner = Instance.new("UICorner")
-            circleCorner.CornerRadius = UDim.new(1, 0)
-            circleCorner.Parent = circle
-            
-            -- Animación de pulsación
-            local pulseTween = TweenService:Create(
-                circle,
-                TweenInfo.new(2 + i, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-                {
-                    Size = UDim2.new(0, (30 + i * 20) * 1.3, 0, (30 + i * 20) * 1.3),
-                    BackgroundTransparency = 0.8
-                }
-            )
-            pulseTween:Play()
-        end
-        
-        -- Rotación del conjunto
-        local rotateTween = TweenService:Create(
-            decorFrame,
-            TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
-            {Rotation = 360}
-        )
-        rotateTween:Play()
-    end
-end
+debugPrint("Background created")
 
 -- Frame principal
 local mainFrame = Instance.new("Frame")
@@ -150,7 +63,8 @@ mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 mainFrame.ZIndex = 10
-mainFrame.BackgroundTransparency = 1 -- Empezar invisible para animación
+
+debugPrint("MainFrame created")
 
 -- Crear esquinas redondeadas para el frame principal
 local mainCorner = Instance.new("UICorner")
@@ -187,13 +101,6 @@ borderGradient.Color = ColorSequence.new({
 })
 borderGradient.Parent = borderStroke
 
--- Animación del borde mejorada
-local borderTween = TweenService:Create(
-    borderGradient,
-    TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
-    {Rotation = 360}
-)
-
 -- Efecto de brillo interno
 local glowFrame = Instance.new("Frame")
 glowFrame.Name = "GlowFrame"
@@ -208,6 +115,8 @@ glowFrame.ZIndex = mainFrame.ZIndex + 1
 local glowCorner = Instance.new("UICorner")
 glowCorner.CornerRadius = UDim.new(0, 16)
 glowCorner.Parent = glowFrame
+
+debugPrint("Frame styling complete")
 
 -- Título principal con efectos
 local titleLabel = Instance.new("TextLabel")
@@ -259,6 +168,8 @@ lineGradient.Color = ColorSequence.new({
 })
 lineGradient.Parent = decorLine
 
+debugPrint("Title elements created")
+
 -- Frame de información del jugador mejorado
 local playerFrame = Instance.new("Frame")
 playerFrame.Name = "PlayerFrame"
@@ -309,6 +220,8 @@ avatarStroke.Thickness = 3
 avatarStroke.Color = Color3.fromRGB(0, 255, 127)
 avatarStroke.Parent = avatarImage
 
+debugPrint("Avatar created")
+
 -- Información del jugador con efectos
 local displayNameLabel = Instance.new("TextLabel")
 displayNameLabel.Name = "DisplayNameLabel"
@@ -341,13 +254,15 @@ countryLabel.Name = "CountryLabel"
 countryLabel.Size = UDim2.new(0.55, 0, 0, 25)
 countryLabel.Position = UDim2.new(0.4, 10, 0, 85)
 countryLabel.BackgroundTransparency = 1
-countryLabel.Text = "🌍 Colombia"
+countryLabel.Text = "Colombia"
 countryLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 countryLabel.TextScaled = true
 countryLabel.Font = Enum.Font.Gotham
 countryLabel.TextXAlignment = Enum.TextXAlignment.Left
 countryLabel.Parent = playerFrame
 countryLabel.ZIndex = 15
+
+debugPrint("Player info labels created")
 
 -- TextBox para la key con efectos
 local keyTextBox = Instance.new("TextBox")
@@ -438,188 +353,182 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(1, 0)
 closeCorner.Parent = closeButton
 
--- Función de animación de entrada
-local function playEntranceAnimation()
-    -- Crear partículas y decoraciones
-    createFloatingParticles()
-    createCornerDecorations()
-    
-    -- Animación de entrada del fondo
-    backgroundGui.BackgroundTransparency = 1
-    local bgTween = TweenService:Create(
-        backgroundGui,
-        TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 0.3}
-    )
-    bgTween:Play()
-    
-    -- Animación de entrada del panel principal
-    mainFrame.BackgroundTransparency = 1
-    mainFrame.Size = UDim2.new(0, 200, 0, 200)
-    mainFrame.Position = UDim2.new(0.5, -100, 0.5, -100)
-    
-    local mainTween = TweenService:Create(
-        mainFrame,
-        TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {
-            BackgroundTransparency = 0,
-            Size = UDim2.new(0, 450, 0, 550),
-            Position = UDim2.new(0.5, -225, 0.5, -275)
-        }
-    )
-    
-    mainTween:Play()
-    mainTween.Completed:Connect(function()
-        borderTween:Play()
-    end)
-    
-    -- Animaciones secuenciales de elementos
-    wait(0.3)
-    
-    -- Título
-    titleLabel.TextTransparency = 1
-    local titleTween = TweenService:Create(
-        titleLabel,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {TextTransparency = 0}
-    )
-    titleTween:Play()
-    
-    wait(0.1)
-    
-    -- Subtítulo
-    subtitleLabel.TextTransparency = 1
-    local subtitleTween = TweenService:Create(
-        subtitleLabel,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {TextTransparency = 0}
-    )
-    subtitleTween:Play()
-    
-    wait(0.2)
-    
-    -- Frame del jugador
-    playerFrame.BackgroundTransparency = 1
-    local playerTween = TweenService:Create(
-        playerFrame,
-        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 0}
-    )
-    playerTween:Play()
-    
-    -- Botones
-    wait(0.2)
-    getKeyButton.BackgroundTransparency = 1
-    submitButton.BackgroundTransparency = 1
-    
-    local buttonTween1 = TweenService:Create(
-        getKeyButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 0}
-    )
-    
-    local buttonTween2 = TweenService:Create(
-        submitButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 0}
-    )
-    
-    buttonTween1:Play()
-    buttonTween2:Play()
+debugPrint("UI elements created")
+
+-- Función para crear partículas flotantes
+local function createFloatingParticles()
+    for i = 1, 15 do
+        local particle = Instance.new("Frame")
+        particle.Name = "Particle" .. i
+        particle.Size = UDim2.new(0, math.random(4, 10), 0, math.random(4, 10))
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particle.BackgroundColor3 = Color3.fromRGB(0, math.random(150, 255), math.random(100, 200))
+        particle.BorderSizePixel = 0
+        particle.BackgroundTransparency = math.random(30, 70) / 100
+        particle.Parent = backgroundGui
+        particle.ZIndex = 2
+        
+        local particleCorner = Instance.new("UICorner")
+        particleCorner.CornerRadius = UDim.new(1, 0)
+        particleCorner.Parent = particle
+        
+        -- Animación flotante continua
+        spawn(function()
+            while particle.Parent do
+                local floatTween = TweenService:Create(
+                    particle,
+                    TweenInfo.new(math.random(8, 15), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {
+                        Position = UDim2.new(
+                            math.random() * 0.8 + 0.1,
+                            0,
+                            math.random() * 0.8 + 0.1,
+                            0
+                        ),
+                        BackgroundTransparency = math.random(10, 90) / 100
+                    }
+                )
+                floatTween:Play()
+                floatTween.Completed:Wait()
+            end
+        end)
+    end
 end
 
--- Función de animación de salida
-local function playExitAnimation()
-    local exitTween = TweenService:Create(
-        mainFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-        {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            BackgroundTransparency = 1
-        }
-    )
+-- Crear decoraciones en las esquinas
+local function createCornerDecorations()
+    local corners = {
+        {UDim2.new(0, 20, 0, 20), "TopLeft"},
+        {UDim2.new(1, -120, 0, 20), "TopRight"},
+        {UDim2.new(0, 20, 1, -120), "BottomLeft"},
+        {UDim2.new(1, -120, 1, -120), "BottomRight"}
+    }
     
-    local bgExitTween = TweenService:Create(
-        backgroundGui,
-        TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        {BackgroundTransparency = 1}
-    )
-    
-    exitTween:Play()
-    bgExitTween:Play()
-    
-    exitTween.Completed:Connect(function()
-        screenGui:Destroy()
-    end)
+    for _, corner in pairs(corners) do
+        local decorFrame = Instance.new("Frame")
+        decorFrame.Name = corner[2] .. "Decoration"
+        decorFrame.Size = UDim2.new(0, 100, 0, 100)
+        decorFrame.Position = corner[1]
+        decorFrame.BackgroundTransparency = 1
+        decorFrame.Parent = backgroundGui
+        decorFrame.ZIndex = 2
+        
+        -- Crear círculos concéntricos
+        for i = 1, 3 do
+            local circle = Instance.new("Frame")
+            circle.Name = "Circle" .. i
+            circle.Size = UDim2.new(0, 30 + (i * 20), 0, 30 + (i * 20))
+            circle.Position = UDim2.new(0.5, -(15 + i * 10), 0.5, -(15 + i * 10))
+            circle.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+            circle.BackgroundTransparency = 0.3 + (i * 0.2)
+            circle.BorderSizePixel = 0
+            circle.Parent = decorFrame
+            
+            local circleCorner = Instance.new("UICorner")
+            circleCorner.CornerRadius = UDim.new(1, 0)
+            circleCorner.Parent = circle
+            
+            -- Animación de pulsación
+            spawn(function()
+                while circle.Parent do
+                    local pulseTween = TweenService:Create(
+                        circle,
+                        TweenInfo.new(2 + i, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                        {
+                            Size = UDim2.new(0, (30 + i * 20) * 1.3, 0, (30 + i * 20) * 1.3),
+                            BackgroundTransparency = 0.8
+                        }
+                    )
+                    pulseTween:Play()
+                    pulseTween.Completed:Wait()
+                    
+                    local pulseTweenBack = TweenService:Create(
+                        circle,
+                        TweenInfo.new(2 + i, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                        {
+                            Size = UDim2.new(0, 30 + (i * 20), 0, 30 + (i * 20)),
+                            BackgroundTransparency = 0.3 + (i * 0.2)
+                        }
+                    )
+                    pulseTweenBack:Play()
+                    pulseTweenBack.Completed:Wait()
+                end
+            end)
+        end
+        
+        -- Rotación del conjunto
+        spawn(function()
+            while decorFrame.Parent do
+                local rotateTween = TweenService:Create(
+                    decorFrame,
+                    TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
+                    {Rotation = 360}
+                )
+                rotateTween:Play()
+                rotateTween.Completed:Wait()
+                decorFrame.Rotation = 0
+            end
+        end)
+    end
 end
+
+debugPrint("Effect functions created")
 
 -- Función para crear toast mejorado
 local function createToast(message)
-    local toastGui = Instance.new("ScreenGui")
-    toastGui.Name = "ToastNotification"
-    toastGui.Parent = playerGui
-    toastGui.DisplayOrder = 200
-    
-    local toastFrame = Instance.new("Frame")
-    toastFrame.Size = UDim2.new(0, 450, 0, 70)
-    toastFrame.Position = UDim2.new(0.5, -225, 1, -50)
-    toastFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    toastFrame.BorderSizePixel = 0
-    toastFrame.Parent = toastGui
-    
-    local toastCorner = Instance.new("UICorner")
-    toastCorner.CornerRadius = UDim.new(0, 15)
-    toastCorner.Parent = toastFrame
-    
-    local toastStroke = Instance.new("UIStroke")
-    toastStroke.Thickness = 3
-    toastStroke.Color = Color3.fromRGB(0, 255, 127)
-    toastStroke.Parent = toastFrame
-    
-    local toastGlow = Instance.new("Frame")
-    toastGlow.Size = UDim2.new(1, 6, 1, 6)
-    toastGlow.Position = UDim2.new(0, -3, 0, -3)
-    toastGlow.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
-    toastGlow.BackgroundTransparency = 0.9
-    toastGlow.BorderSizePixel = 0
-    toastGlow.Parent = toastFrame
-    toastGlow.ZIndex = toastFrame.ZIndex - 1
-    
-    local glowCorner = Instance.new("UICorner")
-    glowCorner.CornerRadius = UDim.new(0, 18)
-    glowCorner.Parent = toastGlow
-    
-    local toastLabel = Instance.new("TextLabel")
-    toastLabel.Size = UDim2.new(1, -20, 1, 0)
-    toastLabel.Position = UDim2.new(0, 10, 0, 0)
-    toastLabel.BackgroundTransparency = 1
-    toastLabel.Text = message
-    toastLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toastLabel.TextScaled = true
-    toastLabel.Font = Enum.Font.Gotham
-    toastLabel.TextWrapped = true
-    toastLabel.Parent = toastFrame
-    
-    -- Animación de entrada del toast
-    local tweenIn = TweenService:Create(
-        toastFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Position = UDim2.new(0.5, -225, 1, -160)}
-    )
-    tweenIn:Play()
-    
-    -- Esperar y hacer animación de salida
-    wait(4)
-    local tweenOut = TweenService:Create(
-        toastFrame,
-        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-        {Position = UDim2.new(0.5, -225, 1, 50)}
-    )
-    tweenOut:Play()
-    
-    tweenOut.Completed:Connect(function()
-        toastGui:Destroy()
+    spawn(function()
+        local toastGui = Instance.new("ScreenGui")
+        toastGui.Name = "ToastNotification"
+        toastGui.Parent = playerGui
+        toastGui.DisplayOrder = 200
+        
+        local toastFrame = Instance.new("Frame")
+        toastFrame.Size = UDim2.new(0, 450, 0, 70)
+        toastFrame.Position = UDim2.new(0.5, -225, 1, -50)
+        toastFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        toastFrame.BorderSizePixel = 0
+        toastFrame.Parent = toastGui
+        
+        local toastCorner = Instance.new("UICorner")
+        toastCorner.CornerRadius = UDim.new(0, 15)
+        toastCorner.Parent = toastFrame
+        
+        local toastStroke = Instance.new("UIStroke")
+        toastStroke.Thickness = 3
+        toastStroke.Color = Color3.fromRGB(0, 255, 127)
+        toastStroke.Parent = toastFrame
+        
+        local toastLabel = Instance.new("TextLabel")
+        toastLabel.Size = UDim2.new(1, -20, 1, 0)
+        toastLabel.Position = UDim2.new(0, 10, 0, 0)
+        toastLabel.BackgroundTransparency = 1
+        toastLabel.Text = message
+        toastLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        toastLabel.TextScaled = true
+        toastLabel.Font = Enum.Font.Gotham
+        toastLabel.TextWrapped = true
+        toastLabel.Parent = toastFrame
+        
+        -- Animación de entrada del toast
+        local tweenIn = TweenService:Create(
+            toastFrame,
+            TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+            {Position = UDim2.new(0.5, -225, 1, -160)}
+        )
+        tweenIn:Play()
+        
+        -- Esperar y hacer animación de salida
+        wait(4)
+        local tweenOut = TweenService:Create(
+            toastFrame,
+            TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+            {Position = UDim2.new(0.5, -225, 1, 50)}
+        )
+        tweenOut:Play()
+        
+        tweenOut.Completed:Connect(function()
+            toastGui:Destroy()
+        end)
     end)
 end
 
@@ -631,12 +540,9 @@ getKeyButton.MouseButton1Click:Connect(function()
         setclipboard(keyUrl)
     end)
     
-    -- Mostrar toast
-    spawn(function()
-        createToast("Key copied to clipboard! Go to your preferred browser and paste it there...")
-    end)
+    createToast("Key copied to clipboard! Go to your preferred browser and paste it there...")
     
-    -- Animación de click espectacular
+    -- Animación de click
     local originalSize = getKeyButton.Size
     local clickTween1 = TweenService:Create(
         getKeyButton,
@@ -659,314 +565,67 @@ getKeyButton.MouseButton1Click:Connect(function()
         )
         clickTween2:Play()
     end)
-    
-    -- Efecto de ondas
-    for i = 1, 3 do
-        local ripple = Instance.new("Frame")
-        ripple.Name = "Ripple"
-        ripple.Size = UDim2.new(0, 10, 0, 10)
-        ripple.Position = UDim2.new(0.5, -5, 0.5, -5)
-        ripple.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
-        ripple.BackgroundTransparency = 0.3
-        ripple.BorderSizePixel = 0
-        ripple.Parent = getKeyButton
-        ripple.ZIndex = getKeyButton.ZIndex + 1
-        
-        local rippleCorner = Instance.new("UICorner")
-        rippleCorner.CornerRadius = UDim.new(1, 0)
-        rippleCorner.Parent = ripple
-        
-        local rippleTween = TweenService:Create(
-            ripple,
-            TweenInfo.new(0.6 + (i * 0.1), Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {
-                Size = UDim2.new(0, 100 + (i * 20), 0, 100 + (i * 20)),
-                Position = UDim2.new(0.5, -50 - (i * 10), 0.5, -50 - (i * 10)),
-                BackgroundTransparency = 1
-            }
-        )
-        
-        spawn(function()
-            wait(i * 0.1)
-            rippleTween:Play()
-            rippleTween.Completed:Connect(function()
-                ripple:Destroy()
-            end)
-        end)
-    end
 end)
 
--- Submit button con efectos
 submitButton.MouseButton1Click:Connect(function()
     local keyText = keyTextBox.Text
     if keyText ~= "" and keyText ~= keyTextBox.PlaceholderText then
-        print("Key submitted: " .. keyText)
-        
-        -- Animación de éxito
-        local successTween = TweenService:Create(
-            submitButton,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-            {BackgroundColor3 = Color3.fromRGB(0, 200, 100)}
-        )
-        successTween:Play()
-        
-        spawn(function()
-            createToast("Key submitted successfully! Validating...")
-        end)
-        
-        -- Volver al color original después de un tiempo
-        wait(1)
-        local resetTween = TweenService:Create(
-            submitButton,
-            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-            {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}
-        )
-        resetTween:Play()
+        createToast("Key submitted successfully! Validating...")
+        debugPrint("Key submitted: " .. keyText)
     else
-        -- Animación de error
-        local errorTween = TweenService:Create(
-            submitButton,
-            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-            {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}
-        )
-        errorTween:Play()
-        
-        -- Efecto de shake
-        local originalPos = submitButton.Position
-        for i = 1, 5 do
-            spawn(function()
-                local shakeTween = TweenService:Create(
-                    submitButton,
-                    TweenInfo.new(0.05, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-                    {Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + (i % 2 == 0 and 5 or -5), originalPos.Y.Scale, originalPos.Y.Offset)}
-                )
-                shakeTween:Play()
-                wait(0.05)
-            end)
-        end
-        
-        wait(0.25)
-        local resetPosTween = TweenService:Create(
-            submitButton,
-            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-            {Position = originalPos}
-        )
-        resetPosTween:Play()
-        
-        spawn(function()
-            createToast("Please enter a valid key!")
-        end)
-        
-        wait(1)
-        local resetColorTween = TweenService:Create(
-            submitButton,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-            {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}
-        )
-        resetColorTween:Play()
+        createToast("Please enter a valid key!")
     end
 end)
 
--- Efectos hover mejorados
+-- Efectos hover
 getKeyButton.MouseEnter:Connect(function()
-    local hoverTween = TweenService:Create(
-        getKeyButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            BackgroundColor3 = Color3.fromRGB(0, 220, 110),
-            Size = UDim2.new(0.44, 0, 0, 47)
-        }
-    )
-    hoverTween:Play()
-    
-    local glowTween = TweenService:Create(
-        getKeyStroke,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Thickness = 3}
-    )
-    glowTween:Play()
+    TweenService:Create(getKeyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 220, 110)}):Play()
 end)
 
 getKeyButton.MouseLeave:Connect(function()
-    local hoverTween = TweenService:Create(
-        getKeyButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            BackgroundColor3 = Color3.fromRGB(0, 200, 100),
-            Size = UDim2.new(0.43, 0, 0, 45)
-        }
-    )
-    hoverTween:Play()
-    
-    local glowTween = TweenService:Create(
-        getKeyStroke,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Thickness = 2}
-    )
-    glowTween:Play()
+    TweenService:Create(getKeyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
 end)
 
 submitButton.MouseEnter:Connect(function()
-    local hoverTween = TweenService:Create(
-        submitButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            BackgroundColor3 = Color3.fromRGB(90, 90, 90),
-            Size = UDim2.new(0.44, 0, 0, 47)
-        }
-    )
-    hoverTween:Play()
-    
-    local glowTween = TweenService:Create(
-        submitStroke,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Thickness = 3,
-            Color = Color3.fromRGB(0, 255, 127)
-        }
-    )
-    glowTween:Play()
+    TweenService:Create(submitButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(90, 90, 90)}):Play()
 end)
 
 submitButton.MouseLeave:Connect(function()
-    local hoverTween = TweenService:Create(
-        submitButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            BackgroundColor3 = Color3.fromRGB(70, 70, 70),
-            Size = UDim2.new(0.43, 0, 0, 45)
-        }
-    )
-    hoverTween:Play()
-    
-    local glowTween = TweenService:Create(
-        submitStroke,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Thickness = 2,
-            Color = Color3.fromRGB(100, 100, 100)
-        }
-    )
-    glowTween:Play()
+    TweenService:Create(submitButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}):Play()
 end)
 
--- Efectos en el TextBox
-keyTextBox.Focused:Connect(function()
-    local focusTween = TweenService:Create(
-        keyBoxStroke,
-        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Thickness = 3,
-            Transparency = 0.3
-        }
-    )
-    focusTween:Play()
-    
-    local sizeTween = TweenService:Create(
-        keyTextBox,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = UDim2.new(0.92, 0, 0, 47)}
-    )
-    sizeTween:Play()
-end)
-
-keyTextBox.FocusLost:Connect(function()
-    local focusTween = TweenService:Create(
-        keyBoxStroke,
-        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Thickness = 2,
-            Transparency = 0.7
-        }
-    )
-    focusTween:Play()
-    
-    local sizeTween = TweenService:Create(
-        keyTextBox,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = UDim2.new(0.9, 0, 0, 45)}
-    )
-    sizeTween:Play()
-end)
-
--- Botón de cerrar con efectos
-closeButton.MouseEnter:Connect(function()
-    local hoverTween = TweenService:Create(
-        closeButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Size = UDim2.new(0, 35, 0, 35),
-            BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-        }
-    )
-    hoverTween:Play()
-end)
-
-closeButton.MouseLeave:Connect(function()
-    local hoverTween = TweenService:Create(
-        closeButton,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {
-            Size = UDim2.new(0, 30, 0, 30),
-            BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        }
-    )
-    hoverTween:Play()
-end)
-
+-- Botón de cerrar
 closeButton.MouseButton1Click:Connect(function()
-    playExitAnimation()
+    local closeTween = TweenService:Create(
+        mainFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Size = UDim2.new(0, 0, 0, 0)}
+    )
+    closeTween:Play()
+    closeTween.Completed:Connect(function()
+        screenGui:Destroy()
+    end)
 end)
 
--- Animaciones de brillo en el título
+-- Animaciones automáticas
 spawn(function()
     while screenGui.Parent do
-        local titleGlow = TweenService:Create(
-            titleLabel,
-            TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {TextColor3 = Color3.fromRGB(0, 255, 200)}
+        -- Animación del borde
+        local borderTween = TweenService:Create(
+            borderGradient,
+            TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
+            {Rotation = 360}
         )
-        titleGlow:Play()
-        wait(0.1)
+        borderTween:Play()
+        borderTween.Completed:Wait()
+        borderGradient.Rotation = 0
     end
 end)
 
--- Animación de pulsación en el avatar
-spawn(function()
-    while screenGui.Parent do
-        local avatarPulse = TweenService:Create(
-            avatarStroke,
-            TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {
-                Thickness = 5,
-                Transparency = 0.3
-            }
-        )
-        avatarPulse:Play()
-        wait(0.1)
-    end
-end)
+-- Crear efectos
+createFloatingParticles()
+createCornerDecorations()
 
--- Efecto de respiración en la sombra
-spawn(function()
-    while screenGui.Parent do
-        local breatheTween = TweenService:Create(
-            shadowFrame,
-            TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {
-                Size = UDim2.new(1, 15, 1, 15),
-                Position = UDim2.new(0, -7.5, 0, -7.5),
-                BackgroundTransparency = 0.6
-            }
-        )
-        breatheTween:Play()
-        wait(0.1)
-    end
-end)
-
--- Iniciar animación de entrada
-spawn(function()
-    playEntranceAnimation()
-end)
+debugPrint("GUI loaded successfully!")
 
 print("XM StealAbrainrot MX GUI Enhanced loaded successfully!")
