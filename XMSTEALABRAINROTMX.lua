@@ -166,7 +166,7 @@ playerStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 playerStatusLabel.Font = Enum.Font.Gotham
 playerStatusLabel.Parent = playerInfoFrame
 
--- Título principal con efecto rainbow
+-- Título principal (sin efecto rainbow)
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "MainTitle"
 titleLabel.Size = UDim2.new(1, -40, 0, 45)
@@ -177,35 +177,6 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = mainFrame
-
--- Gradiente rainbow para el título
-local titleGradient = Instance.new("UIGradient")
-titleGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
-    ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 140, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 128)),
-    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 255))
-}
-titleGradient.Parent = titleLabel
-
--- Animación del título rainbow
-local function animateRainbowTitle()
-    while screenGui.Parent do
-        for offset = 0, 1, 0.02 do
-            if not screenGui.Parent then break end
-            titleGradient.Offset = Vector2.new(offset, 0)
-            wait(0.05)
-        end
-        for offset = 1, 0, -0.02 do
-            if not screenGui.Parent then break end
-            titleGradient.Offset = Vector2.new(offset, 0)
-            wait(0.05)
-        end
-    end
-end
-
-spawn(animateRainbowTitle)
 
 -- Subtítulo
 local subtitleLabel = Instance.new("TextLabel")
@@ -219,24 +190,17 @@ subtitleLabel.TextScaled = true
 subtitleLabel.Font = Enum.Font.Gotham
 subtitleLabel.Parent = mainFrame
 
--- Línea decorativa
+-- Línea decorativa (sin gradiente)
 local decorativeLine = Instance.new("Frame")
 decorativeLine.Size = UDim2.new(0, 60, 0, 3)
 decorativeLine.Position = UDim2.new(0.5, -30, 0, 250)
-decorativeLine.BackgroundColor3 = Color3.fromRGB(255, 0, 128)
+decorativeLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 decorativeLine.BorderSizePixel = 0
 decorativeLine.Parent = mainFrame
 
 local lineCorner = Instance.new("UICorner")
 lineCorner.CornerRadius = UDim.new(0, 2)
 lineCorner.Parent = decorativeLine
-
-local lineGradient = Instance.new("UIGradient")
-lineGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
-}
-lineGradient.Parent = decorativeLine
 
 -- Campo de entrada de clave (más oscuro)
 local keyInputFrame = Instance.new("Frame")
@@ -329,7 +293,7 @@ local function showToast(message)
     local toastFrame = Instance.new("Frame")
     toastFrame.Name = "Toast"
     toastFrame.Size = UDim2.new(0, 400, 0, 80)
-    toastFrame.Position = UDim2.new(0.5, -200, 1, 100) -- Posición inicial abajo fuera de pantalla
+    toastFrame.Position = UDim2.new(0.5, -200, 1, 50) -- Posición inicial un poco más arriba
     toastFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Más oscuro
     toastFrame.BorderSizePixel = 0
     toastFrame.Parent = screenGui
@@ -351,7 +315,7 @@ local function showToast(message)
     
     -- Animación de entrada desde abajo
     local slideIn = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -200, 1, -100) -- Aparece abajo
+        Position = UDim2.new(0.5, -200, 1, -120) -- Aparece un poco más arriba
     })
     slideIn:Play()
     
@@ -359,7 +323,7 @@ local function showToast(message)
     spawn(function()
         wait(4)
         local slideOut = TweenService:Create(toastFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, -200, 1, 100) -- Se va abajo
+            Position = UDim2.new(0.5, -200, 1, 50) -- Se va abajo
         })
         slideOut:Play()
         slideOut.Completed:Connect(function()
