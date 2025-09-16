@@ -27,7 +27,7 @@ local function createCornerDecoration(position, rotation)
     local decoration = Instance.new("Frame")
     decoration.Size = UDim2.new(0, 60, 0, 60)
     decoration.Position = position
-    decoration.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+    decoration.BackgroundColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
     decoration.BorderSizePixel = 0
     decoration.Rotation = rotation
     decoration.Parent = background
@@ -37,7 +37,7 @@ local function createCornerDecoration(position, rotation)
     corner.Parent = decoration
     
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(0, 255, 127)
+    stroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
     stroke.Thickness = 2
     stroke.Parent = decoration
     
@@ -55,7 +55,7 @@ local function createEdgeDecoration(position, size)
     local decoration = Instance.new("Frame")
     decoration.Size = size
     decoration.Position = position
-    decoration.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
+    decoration.BackgroundColor3 = Color3.fromRGB(100, 0, 0) -- Rojo más oscuro
     decoration.BorderSizePixel = 0
     decoration.Rotation = 45
     decoration.Parent = background
@@ -87,7 +87,7 @@ panelCorner.Parent = mainPanel
 
 -- Borde neon del panel
 local panelStroke = Instance.new("UIStroke")
-panelStroke.Color = Color3.fromRGB(0, 255, 127)
+panelStroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 panelStroke.Thickness = 3
 panelStroke.Parent = mainPanel
 
@@ -95,7 +95,7 @@ panelStroke.Parent = mainPanel
 local shadow = Instance.new("Frame")
 shadow.Size = UDim2.new(1, 10, 1, 10)
 shadow.Position = UDim2.new(0, -5, 0, -5)
-shadow.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+shadow.BackgroundColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 shadow.BackgroundTransparency = 0.8
 shadow.BorderSizePixel = 0
 shadow.ZIndex = mainPanel.ZIndex - 1
@@ -126,7 +126,7 @@ headshotCorner.CornerRadius = UDim.new(0, 15)
 headshotCorner.Parent = headshot
 
 local headshotStroke = Instance.new("UIStroke")
-headshotStroke.Color = Color3.fromRGB(0, 255, 127)
+headshotStroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 headshotStroke.Thickness = 2
 headshotStroke.Parent = headshot
 
@@ -155,7 +155,7 @@ username.Size = UDim2.new(1, 0, 0, 18)
 username.Position = UDim2.new(0, 0, 0, 22)
 username.BackgroundTransparency = 1
 username.Text = "@" .. player.Name
-username.TextColor3 = Color3.fromRGB(0, 255, 127)
+username.TextColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 username.TextSize = 12
 username.Font = Enum.Font.Gotham
 username.TextXAlignment = Enum.TextXAlignment.Left
@@ -178,8 +178,8 @@ local status = Instance.new("TextLabel")
 status.Size = UDim2.new(1, 0, 0, 15)
 status.Position = UDim2.new(0, 0, 0, 55)
 status.BackgroundTransparency = 1
-status.Text = "🟢 Online"
-status.TextColor3 = Color3.fromRGB(0, 255, 127)
+status.Text = "🔴 Online"
+status.TextColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 status.TextSize = 10
 status.Font = Enum.Font.Gotham
 status.TextXAlignment = Enum.TextXAlignment.Left
@@ -191,7 +191,7 @@ title.Size = UDim2.new(1, 0, 0, 45)
 title.Position = UDim2.new(0, 0, 0, 110)
 title.BackgroundTransparency = 1
 title.Text = "XMStealAbrainrotMX"
-title.TextColor3 = Color3.fromRGB(0, 255, 127)
+title.TextColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 title.TextSize = 24
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Center
@@ -228,7 +228,7 @@ keyInputCorner.CornerRadius = UDim.new(0, 10)
 keyInputCorner.Parent = keyInput
 
 local keyInputStroke = Instance.new("UIStroke")
-keyInputStroke.Color = Color3.fromRGB(0, 255, 127)
+keyInputStroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
 keyInputStroke.Thickness = 2
 keyInputStroke.Parent = keyInput
 
@@ -246,7 +246,7 @@ local function showToast(message)
     toastCorner.Parent = toast
     
     local toastStroke = Instance.new("UIStroke")
-    toastStroke.Color = Color3.fromRGB(0, 255, 127)
+    toastStroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
     toastStroke.Thickness = 2
     toastStroke.Parent = toast
     
@@ -290,19 +290,19 @@ local function createButton(text, position, color)
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    -- Continuación del archivo anterior
+-- File: /StarterGui/ModernPanel.lua
+
     button.TextSize = 14
     button.Font = Enum.Font.GothamBold
     button.Parent = container
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 10)
-    -- Continuación del archivo anterior
--- File: /StarterGui/ModernPanel.lua
-
     buttonCorner.Parent = button
     
     local buttonStroke = Instance.new("UIStroke")
-    buttonStroke.Color = Color3.fromRGB(0, 255, 127)
+    buttonStroke.Color = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
     buttonStroke.Thickness = 2
     buttonStroke.Parent = button
     
@@ -324,7 +324,7 @@ end
 local getKeyButton = createButton("Get Key", UDim2.new(0, 0, 0, 280), Color3.fromRGB(50, 50, 70))
 
 -- Botón Submit
-local submitButton = createButton("Submit", UDim2.new(0.55, 0, 0, 280), Color3.fromRGB(0, 150, 75))
+local submitButton = createButton("Submit", UDim2.new(0.55, 0, 0, 280), Color3.fromRGB(100, 0, 0)) -- Rojo oscuro
 
 -- Animación de entrada
 mainPanel.Position = UDim2.new(0.5, -200, 1.5, 0)
@@ -449,7 +449,7 @@ local function createParticle()
     local particle = Instance.new("Frame")
     particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
     particle.Position = UDim2.new(math.random(), 0, 1.1, 0)
-    particle.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+    particle.BackgroundColor3 = Color3.fromRGB(139, 0, 0) -- Rojo oscuro
     particle.BackgroundTransparency = 0.7
     particle.BorderSizePixel = 0
     particle.Parent = background
