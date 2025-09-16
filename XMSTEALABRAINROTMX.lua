@@ -354,7 +354,7 @@ getKeyButton.MouseButton1Click:Connect(function()
     end)
     
     -- Copiar enlace al portapapeles
-    local linkToCopy = "https://zamasxmodder.github.io/PageFreeTrial3DaysKey/"
+    local linkToCopy = "https://zamasxmodder.github.io/Page404StealScript/"
     setclipboard(linkToCopy)
     
     -- Mostrar toast notification
