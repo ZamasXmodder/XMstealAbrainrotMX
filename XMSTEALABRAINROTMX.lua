@@ -1,780 +1,469 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Obtener el tamaño de la pantalla
-local camera = workspace.CurrentCamera
-local screenSize = camera.ViewportSize
-
--- Detectar si es móvil
-local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
-
--- Colores verde oscuro suavizado
-local primaryGreen = Color3.fromRGB(0, 180, 90)
-local secondaryGreen = Color3.fromRGB(0, 150, 75)
-local accentGreen = Color3.fromRGB(0, 120, 60)
-
--- Crear el GUI principal
+-- Crear ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "XMStealAbrainrotGUI"
+screenGui.Name = "ModernPanelGui"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- GUI de fondo decorativo que cubre toda la pantalla
-local backgroundFrame = Instance.new("Frame")
-backgroundFrame.Name = "BackgroundFrame"
-backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
-backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
-backgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-backgroundFrame.BackgroundTransparency = 0.2
-backgroundFrame.BorderSizePixel = 0
-backgroundFrame.Parent = screenGui
+-- Background que cubre toda la pantalla
+local background = Instance.new("Frame")
+background.Name = "Background"
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Position = UDim2.new(0, 0, 0, 0)
+background.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+background.BackgroundTransparency = 0.3
+background.BorderSizePixel = 0
+background.Parent = screenGui
 
--- Partículas flotantes decorativas (menos en móvil)
-local function createFloatingParticle(parent, size, startPos)
-    local particle = Instance.new("Frame")
-    particle.Size = UDim2.new(0, size, 0, size)
-    particle.Position = startPos
-    particle.BackgroundColor3 = primaryGreen
-    particle.BackgroundTransparency = 0.6
-    particle.BorderSizePixel = 0
-    particle.Parent = parent
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = particle
-    
-    -- Animación flotante (más suave en móvil)
-    spawn(function()
-        while particle.Parent do
-            local randomX = math.random(-30, 30)
-            local randomY = math.random(-20, 20)
-            local duration = isMobile and math.random(4, 8) or math.random(3, 6)
-            
-            local tween = TweenService:Create(particle, TweenInfo.new(
-                duration, 
-                Enum.EasingStyle.Sine, 
-                Enum.EasingDirection.InOut, 
-                -1, 
-                true
-            ), {
-                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + randomX, startPos.Y.Scale, startPos.Y.Offset + randomY)
-            })
-            tween:Play()
-        end)
-    end
-
-    addHoverEffect(getKeyButton)
-    addHoverEffect(submitButton)
-
-    -- Efecto hover para el textbox
-    keyTextBox.MouseEnter:Connect(function()
-        local tween = TweenService:Create(keyTextBox, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        })
-        tween:Play()
-    end)
-
-    keyTextBox.MouseLeave:Connect(function()
-        local tween = TweenService:Create(keyTextBox, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-        })
-        tween:Play()
-    end)
-end
-
--- Animación de entrada del panel principal
-mainPanel.Position = UDim2.new(0.5, -panelWidth/2, -1, 0)
-local panelTween = TweenService:Create(mainPanel, TweenInfo.new(0.8, Enum.EasingStyle.Back), {
-    Position = UDim2.new(0.5, -panelWidth/2, 0.5, -panelHeight/2)
-})
-panelTween:Play()
-
--- Efecto de respiración para el borde del panel principal
-spawn(function()
-    while mainPanel.Parent do
-        local tween1 = TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine), {
-            Transparency = 0.3
-        })
-        tween1:Play()
-        tween1.Completed:Wait()
-        
-        local tween2 = TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine), {
-            Transparency = 0
-        })
-        tween2:Play()
-        tween2.Completed:Wait()
-    end
-end)
-
--- Función para cerrar el GUI
-local function closeGUI()
-    local closeTween = TweenService:Create(mainPanel, TweenInfo.new(0.5, Enum.EasingStyle.Back), {
-        Position = UDim2.new(0.5, -panelWidth/2, -1, 0)
-    })
-    closeTween:Play()
-    
-    local fadeTween = TweenService:Create(backgroundFrame, TweenInfo.new(0.5), {
-        BackgroundTransparency = 1
-    })
-    fadeTween:Play()
-    
-    closeTween.Completed:Connect(function()
-        screenGui:Destroy()
-    end)
-end
-
--- Botón de cerrar (responsive)
-local closeButtonSize = isMobile and 25 or 30
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, closeButtonSize, 0, closeButtonSize)
-closeButton.Position = UDim2.new(1, -closeButtonSize - 10, 0, 10)
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-closeButton.BorderSizePixel = 0
-closeButton.Text = "×"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextScaled = true
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = mainPanel
-
-local closeButtonCorner = Instance.new("UICorner")
-closeButtonCorner.CornerRadius = UDim.new(1, 0)
-closeButtonCorner.Parent = closeButton
-
-closeButton.MouseButton1Click:Connect(closeGUI)
-
--- Efecto hover para el botón de cerrar (solo en PC)
-if not isMobile then
-    closeButton.MouseEnter:Connect(function()
-        local tween = TweenService:Create(closeButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-        })
-        tween:Play()
-    end)
-
-    closeButton.MouseLeave:Connect(function()
-        local tween = TweenService:Create(closeButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        })
-        tween:Play()
-    end)
-end
-
--- Manejo de cambio de orientación en móvil
-if isMobile then
-    local function updateForOrientation()
-        local newScreenSize = camera.ViewportSize
-        local newPanelWidth = math.min(newScreenSize.X * 0.9, 350)
-        local newPanelHeight = math.min(newScreenSize.Y * 0.85, 550)
-        
-        local tween = TweenService:Create(mainPanel, TweenInfo.new(0.3), {
-            Size = UDim2.new(0, newPanelWidth, 0, newPanelHeight),
-            Position = UDim2.new(0.5, -newPanelWidth/2, 0.5, -newPanelHeight/2)
-        })
-        tween:Play()
-        
-        -- Actualizar tamaños de elementos internos
-        local newInfoWidth = newPanelWidth - avatarSize - 40
-        playerName.Size = UDim2.new(0, newInfoWidth, 0, 20)
-        playerUsername.Size = UDim2.new(0, newInfoWidth, 0, 16)
-        playerCountry.Size = UDim2.new(0, newInfoWidth, 0, 16)
-        playerStatus.Size = UDim2.new(0, newInfoWidth, 0, 16)
-        
-        local newButtonWidth = (newPanelWidth - 50) / 2
-        getKeyButton.Size = UDim2.new(0, newButtonWidth, 0, 35)
-        submitButton.Size = UDim2.new(0, newButtonWidth, 0, 35)
-        submitButton.Position = UDim2.new(0, newPanelWidth/2 + 5, 0, 240)
-    end
-    
-    -- Conectar el evento de cambio de tamaño de la cámara
-    camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateForOrientation)
-end
-
--- Optimizaciones para dispositivos de menor rendimiento
-if isMobile then
-    -- Reducir la calidad de las animaciones en dispositivos móviles
-    local function optimizeAnimations()
-        for _, descendant in pairs(backgroundFrame:GetDescendants()) do
-            if descendant:IsA("Frame") and descendant.Parent == backgroundFrame then
-                -- Pausar algunas animaciones en segundo plano
-                if math.random(1, 3) == 1 then
-                    descendant.Visible = false
-                end
-            end
-        end
-    end
-    
-    -- Ejecutar optimizaciones después de 5 segundos
-    spawn(function()
-        wait(5)
-        optimizeAnimations()
-    end)
-end
-
--- Información de debug (opcional)
-if game.Players.LocalPlayer.Name == "YourUsername" then -- Reemplaza con tu username para debug
-    local debugLabel = Instance.new("TextLabel")
-    debugLabel.Name = "DebugLabel"
-    debugLabel.Size = UDim2.new(0, 200, 0, 30)
-    debugLabel.Position = UDim2.new(0, 10, 1, -40)
-    debugLabel.BackgroundTransparency = 0.5
-    debugLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    debugLabel.Text = string.format("Screen: %dx%d | Mobile: %s", screenSize.X, screenSize.Y, tostring(isMobile))
-    debugLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    debugLabel.TextScaled = true
-    debugLabel.Font = Enum.Font.Gotham
-    debugLabel.Parent = screenGui
-    
-    local debugCorner = Instance.new("UICorner")
-    debugCorner.CornerRadius = UDim.new(0, 5)
-    debugCorner.Parent = debugLabel
-end
-
-print("XM StealAbrainrot MX GUI loaded successfully! (Responsive Version)")
-print("Screen Size:", screenSize.X .. "x" .. screenSize.Y)
-print("Mobile Device:", tostring(isMobile))
-print("Panel Size:", panelWidth .. "x" .. panelHeight)Play()
-            wait(math.random(3, 6))
-        end
-    end)
-    
-    return particle
-end
-
--- Crear menos partículas en móvil para mejor rendimiento
-local particleCount = isMobile and 8 or 15
-for i = 1, particleCount do
-    local particleSize = isMobile and math.random(6, 12) or math.random(8, 20)
-    createFloatingParticle(
-        backgroundFrame, 
-        particleSize, 
-        UDim2.new(math.random(0, 100)/100, 0, math.random(0, 100)/100, 0)
-    )
-end
-
--- Decoraciones en las esquinas (más pequeñas en móvil)
-local function createCornerDecoration(parent, position)
-    local decorationSize = isMobile and 60 or 100
+-- Función para crear decoraciones en las esquinas
+local function createCornerDecoration(position, rotation)
     local decoration = Instance.new("Frame")
-    decoration.Size = UDim2.new(0, decorationSize, 0, decorationSize)
+    decoration.Size = UDim2.new(0, 60, 0, 60)
     decoration.Position = position
-    decoration.BackgroundColor3 = primaryGreen
-    decoration.BackgroundTransparency = 0.3
+    decoration.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
     decoration.BorderSizePixel = 0
-    decoration.Rotation = 45
-    decoration.Parent = parent
+    decoration.Rotation = rotation
+    decoration.Parent = background
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, isMobile and 12 or 20)
+    corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = decoration
     
     local stroke = Instance.new("UIStroke")
-    stroke.Color = secondaryGreen
-    stroke.Thickness = isMobile and 2 or 3
+    stroke.Color = Color3.fromRGB(0, 255, 127)
+    stroke.Thickness = 2
     stroke.Parent = decoration
     
-    -- Decoración interna
-    local innerDeco = Instance.new("Frame")
-    innerDeco.Size = UDim2.new(0.6, 0, 0.6, 0)
-    innerDeco.Position = UDim2.new(0.2, 0, 0.2, 0)
-    innerDeco.BackgroundColor3 = accentGreen
-    innerDeco.BackgroundTransparency = 0.5
-    innerDeco.BorderSizePixel = 0
-    innerDeco.Parent = decoration
-    
-    local innerCorner = Instance.new("UICorner")
-    innerCorner.CornerRadius = UDim.new(0, isMobile and 6 or 10)
-    innerCorner.Parent = innerDeco
+    -- Efecto de brillo
+    local glow = Instance.new("ImageLabel")
+    glow.Size = UDim2.new(1.5, 0, 1.5, 0)
+    glow.Position = UDim2.new(-0.25, 0, -0.25, 0)
+    glow.BackgroundTransparency = 1
+    glow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    glow.ImageColor3 = Color3.fromRGB(0, 255, 127)
+    glow.ImageTransparency = 0.7
+    glow.Parent = decoration
     
     return decoration
 end
 
--- Crear decoraciones en las esquinas (ajustadas para móvil)
-local cornerOffset = isMobile and -30 or -50
-createCornerDecoration(backgroundFrame, UDim2.new(0, cornerOffset, 0, cornerOffset))
-createCornerDecoration(backgroundFrame, UDim2.new(1, cornerOffset, 0, cornerOffset))
-createCornerDecoration(backgroundFrame, UDim2.new(0, cornerOffset, 1, cornerOffset))
-createCornerDecoration(backgroundFrame, UDim2.new(1, cornerOffset, 1, cornerOffset))
+-- Crear decoraciones en las esquinas
+local topLeft = createCornerDecoration(UDim2.new(0, 20, 0, 20), 45)
+local topRight = createCornerDecoration(UDim2.new(1, -80, 0, 20), 45)
+local bottomLeft = createCornerDecoration(UDim2.new(0, 20, 1, -80), 45)
+local bottomRight = createCornerDecoration(UDim2.new(1, -80, 1, -80), 45)
 
--- Líneas decorativas animadas (simplificadas en móvil)
-if not isMobile then
-    local function createAnimatedLine(parent, startPos, endPos, thickness)
-        local line = Instance.new("Frame")
-        line.Size = UDim2.new(0, thickness, 0, 0)
-        line.Position = startPos
-        line.BackgroundColor3 = primaryGreen
-        line.BackgroundTransparency = 0.4
-        line.BorderSizePixel = 0
-        line.Parent = parent
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = line
-        
-        -- Animación de crecimiento
-        spawn(function()
-            while line.Parent do
-                local distance = math.sqrt((endPos.X.Offset - startPos.X.Offset)^2 + (endPos.Y.Offset - startPos.Y.Offset)^2)
-                local tween = TweenService:Create(line, TweenInfo.new(2, Enum.EasingStyle.Sine), {
-                    Size = UDim2.new(0, thickness, 0, distance)
-                })
-                tween:Play()
-                tween.Completed:Wait()
-                
-                local tween2 = TweenService:Create(line, TweenInfo.new(2, Enum.EasingStyle.Sine), {
-                    Size = UDim2.new(0, thickness, 0, 0)
-                })
-                tween2:Play()
-                tween2.Completed:Wait()
-                wait(1)
-            end
-        end)
-        
-        return line
-    end
-
-    -- Crear líneas decorativas solo en PC
-    createAnimatedLine(backgroundFrame, UDim2.new(0, 100, 0, 100), UDim2.new(0, 300, 0, 200), 4)
-    createAnimatedLine(backgroundFrame, UDim2.new(1, -100, 0, 150), UDim2.new(1, -250, 0, 300), 4)
-    createAnimatedLine(backgroundFrame, UDim2.new(0, 150, 1, -100), UDim2.new(0, 350, 1, -250), 4)
-    createAnimatedLine(backgroundFrame, UDim2.new(1, -200, 1, -80), UDim2.new(1, -400, 1, -200), 4)
-end
-
--- Decoraciones hexagonales (menos en móvil)
-local function createHexDecoration(parent, position, size)
-    local hex = Instance.new("ImageLabel")
-    hex.Size = UDim2.new(0, size, 0, size)
-    hex.Position = position
-    hex.BackgroundTransparency = 1
-    hex.ImageColor3 = primaryGreen
-    hex.ImageTransparency = 0.7
-    hex.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-    hex.Parent = parent
-    
-    -- Rotación continua (más lenta en móvil)
-    spawn(function()
-        while hex.Parent do
-            local duration = isMobile and 15 or 10
-            local tween = TweenService:Create(hex, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-                Rotation = 360
-            })
-            tween:Play()
-            tween.Completed:Wait()
-            hex.Rotation = 0
-        end
-    end)
-    
-    return hex
-end
-
--- Crear hexágonos decorativos (menos en móvil)
-local hexCount = isMobile and 4 or 8
-for i = 1, hexCount do
-    local hexSize = isMobile and math.random(20, 40) or math.random(30, 60)
-    createHexDecoration(
-        backgroundFrame,
-        UDim2.new(math.random(0, 100)/100, 0, math.random(0, 100)/100, 0),
-        hexSize
-    )
-end
-
--- Decoraciones en los bordes (simplificadas en móvil)
-local function createEdgeDecoration(parent, size, position)
+-- Decoraciones adicionales en los bordes
+local function createEdgeDecoration(position, size)
     local decoration = Instance.new("Frame")
     decoration.Size = size
     decoration.Position = position
-    decoration.BackgroundColor3 = primaryGreen
-    decoration.BackgroundTransparency = 0.6
+    decoration.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
     decoration.BorderSizePixel = 0
-    decoration.Parent = parent
+    decoration.Rotation = 45
+    decoration.Parent = background
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, isMobile and 10 or 15)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = decoration
-    
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = secondaryGreen
-    stroke.Thickness = isMobile and 1 or 2
-    stroke.Parent = decoration
-    
-    -- Efecto de pulso (más lento en móvil)
-    spawn(function()
-        while decoration.Parent do
-            local duration = isMobile and 2 or 1.5
-            local tween1 = TweenService:Create(decoration, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
-                BackgroundTransparency = 0.3
-            })
-            tween1:Play()
-            tween1.Completed:Wait()
-            
-            local tween2 = TweenService:Create(decoration, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
-                BackgroundTransparency = 0.8
-            })
-            tween2:Play()
-            tween2.Completed:Wait()
-        end
-    end)
 end
 
--- Decoraciones en los bordes (ajustadas para móvil)
-if isMobile then
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 150, 0, 15), UDim2.new(0.5, -75, 0, 0))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 150, 0, 15), UDim2.new(0.5, -75, 1, -15))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 15, 0, 150), UDim2.new(0, 0, 0.5, -75))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 15, 0, 150), UDim2.new(1, -15, 0.5, -75))
-else
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 250, 0, 25), UDim2.new(0.5, -125, 0, 0))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 250, 0, 25), UDim2.new(0.5, -125, 1, -25))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 25, 0, 250), UDim2.new(0, 0, 0.5, -125))
-    createEdgeDecoration(backgroundFrame, UDim2.new(0, 25, 0, 250), UDim2.new(1, -25, 0.5, -125))
-end
+-- Decoraciones adicionales
+createEdgeDecoration(UDim2.new(0.5, -15, 0, 10), UDim2.new(0, 30, 0, 30))
+createEdgeDecoration(UDim2.new(0.5, -15, 1, -40), UDim2.new(0, 30, 0, 30))
+createEdgeDecoration(UDim2.new(0, 10, 0.5, -15), UDim2.new(0, 30, 0, 30))
+createEdgeDecoration(UDim2.new(1, -40, 0.5, -15), UDim2.new(0, 30, 0, 30))
 
--- Ondas decorativas (simplificadas en móvil)
-local function createWave(parent, yPosition)
-    local waveCount = isMobile and 10 or 20
-    for i = 1, waveCount do
-        local wave = Instance.new("Frame")
-        local waveSize = isMobile and 10 or 15
-        wave.Size = UDim2.new(0, waveSize, 0, waveSize)
-        wave.Position = UDim2.new(i/waveCount, -waveSize/2, 0, yPosition)
-        wave.BackgroundColor3 = primaryGreen
-        wave.BackgroundTransparency = 0.7
-        wave.BorderSizePixel = 0
-        wave.Parent = parent
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = wave
-        
-        -- Animación de onda (más suave en móvil)
-        spawn(function()
-            wait(i * 0.1)
-            while wave.Parent do
-                local amplitude = isMobile and 10 or 20
-                local duration = isMobile and 3 or 2
-                local tween = TweenService:Create(wave, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
-                    Position = UDim2.new(i/waveCount, -waveSize/2, 0, yPosition + math.sin(tick() * 2) * amplitude)
-                })
-                tween:Play()
-                wait(0.2)
-            end
-        end)
-    end
-end
-
--- Crear ondas (menos en móvil)
-if isMobile then
-    createWave(backgroundFrame, screenSize.Y * 0.2)
-    createWave(backgroundFrame, screenSize.Y * 0.8)
-else
-    createWave(backgroundFrame, 100)
-    createWave(backgroundFrame, 300)
-    createWave(backgroundFrame, 500)
-end
-
--- Panel principal (responsive)
-local panelWidth = isMobile and math.min(screenSize.X * 0.9, 350) or 400
-local panelHeight = isMobile and math.min(screenSize.Y * 0.85, 550) or 500
-
+-- Panel principal
 local mainPanel = Instance.new("Frame")
 mainPanel.Name = "MainPanel"
-mainPanel.Size = UDim2.new(0, panelWidth, 0, panelHeight)
-mainPanel.Position = UDim2.new(0.5, -panelWidth/2, 0.5, -panelHeight/2)
-mainPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainPanel.Size = UDim2.new(0, 400, 0, 500)
+mainPanel.Position = UDim2.new(0.5, -200, 0.5, -250)
+mainPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
 mainPanel.BorderSizePixel = 0
 mainPanel.Parent = screenGui
 
--- Esquinas redondeadas para el panel principal
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, isMobile and 12 or 15)
-mainCorner.Parent = mainPanel
+-- Esquinas redondeadas del panel
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 20)
+panelCorner.Parent = mainPanel
 
--- Borde neon verde oscuro para el panel principal
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = primaryGreen
-mainStroke.Thickness = isMobile and 2 or 3
-mainStroke.Parent = mainPanel
+-- Borde neon del panel
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color = Color3.fromRGB(0, 255, 127)
+panelStroke.Thickness = 3
+panelStroke.Parent = mainPanel
 
--- ScrollingFrame para móvil
-local scrollFrame = nil
-if isMobile then
-    scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Name = "ScrollFrame"
-    scrollFrame.Size = UDim2.new(1, 0, 1, 0)
-    scrollFrame.Position = UDim2.new(0, 0, 0, 0)
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.BorderSizePixel = 0
-    scrollFrame.ScrollBarThickness = 6
-    scrollFrame.ScrollBarImageColor3 = primaryGreen
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 650)
-    scrollFrame.Parent = mainPanel
-end
+-- Efecto de sombra del panel
+local shadow = Instance.new("Frame")
+shadow.Size = UDim2.new(1, 10, 1, 10)
+shadow.Position = UDim2.new(0, -5, 0, -5)
+shadow.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+shadow.BackgroundTransparency = 0.8
+shadow.BorderSizePixel = 0
+shadow.ZIndex = mainPanel.ZIndex - 1
+shadow.Parent = mainPanel
 
-local contentParent = scrollFrame or mainPanel
+local shadowCorner = Instance.new("UICorner")
+shadowCorner.CornerRadius = UDim.new(0, 25)
+shadowCorner.Parent = shadow
 
--- Sección de datos del jugador (responsive)
-local playerSection = Instance.new("Frame")
-playerSection.Name = "PlayerSection"
-playerSection.Size = UDim2.new(1, -20, 0, isMobile and 100 or 120)
-playerSection.Position = UDim2.new(0, 10, 0, 10)
-playerSection.BackgroundTransparency = 1
-playerSection.Parent = contentParent
+-- Contenedor para organizar elementos
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, -40, 1, -40)
+container.Position = UDim2.new(0, 20, 0, 20)
+container.BackgroundTransparency = 1
+container.Parent = mainPanel
 
--- Avatar del jugador (más pequeño en móvil)
-local avatarSize = isMobile and 60 or 80
-local avatarImage = Instance.new("ImageLabel")
-avatarImage.Name = "AvatarImage"
-avatarImage.Size = UDim2.new(0, avatarSize, 0, avatarSize)
-avatarImage.Position = UDim2.new(0, 10, 0, 10)
-avatarImage.BackgroundTransparency = 1
-avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=150&height=150&format=png"
-avatarImage.Parent = playerSection
+-- Headshot del jugador
+local headshot = Instance.new("ImageLabel")
+headshot.Size = UDim2.new(0, 80, 0, 80)
+headshot.Position = UDim2.new(0, 0, 0, 0)
+headshot.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+headshot.BorderSizePixel = 0
+headshot.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size180x180)
+headshot.Parent = container
 
-local avatarCorner = Instance.new("UICorner")
-avatarCorner.CornerRadius = UDim.new(0, isMobile and 8 or 10)
-avatarCorner.Parent = avatarImage
+local headshotCorner = Instance.new("UICorner")
+headshotCorner.CornerRadius = UDim.new(0, 15)
+headshotCorner.Parent = headshot
 
--- Información del jugador (ajustada para móvil)
-local infoWidth = panelWidth - avatarSize - 40
+local headshotStroke = Instance.new("UIStroke")
+headshotStroke.Color = Color3.fromRGB(0, 255, 127)
+headshotStroke.Thickness = 2
+headshotStroke.Parent = headshot
 
+-- Información del jugador
+local playerInfo = Instance.new("Frame")
+playerInfo.Size = UDim2.new(1, -100, 0, 80)
+playerInfo.Position = UDim2.new(0, 100, 0, 0)
+playerInfo.BackgroundTransparency = 1
+playerInfo.Parent = container
+
+-- Nombre del jugador
 local playerName = Instance.new("TextLabel")
-playerName.Name = "PlayerName"
-playerName.Size = UDim2.new(0, infoWidth, 0, isMobile and 20 or 25)
-playerName.Position = UDim2.new(0, avatarSize + 20, 0, 10)
+playerName.Size = UDim2.new(1, 0, 0, 25)
+playerName.Position = UDim2.new(0, 0, 0, 0)
 playerName.BackgroundTransparency = 1
 playerName.Text = player.DisplayName
 playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
 playerName.TextScaled = true
 playerName.Font = Enum.Font.GothamBold
-playerName.TextXAlignment = Enum.TextXAlignment.Left
-playerName.Parent = playerSection
+playerName.Parent = playerInfo
 
-local playerUsername = Instance.new("TextLabel")
-playerUsername.Name = "PlayerUsername"
-playerUsername.Size = UDim2.new(0, infoWidth, 0, isMobile and 16 or 20)
-playerUsername.Position = UDim2.new(0, avatarSize + 20, 0, isMobile and 30 or 35)
-playerUsername.BackgroundTransparency = 1
-playerUsername.Text = "@" .. player.Name
-playerUsername.TextColor3 = Color3.fromRGB(150, 150, 150)
-playerUsername.TextScaled = true
-playerUsername.Font = Enum.Font.Gotham
-playerUsername.TextXAlignment = Enum.TextXAlignment.Left
-playerUsername.Parent = playerSection
+-- Username del jugador
+local username = Instance.new("TextLabel")
+username.Size = UDim2.new(1, 0, 0, 20)
+username.Position = UDim2.new(0, 0, 0, 25)
+username.BackgroundTransparency = 1
+username.Text = "@" .. player.Name
+username.TextColor3 = Color3.fromRGB(0, 255, 127)
+username.TextScaled = true
+username.Font = Enum.Font.Gotham
+username.Parent = playerInfo
 
-local playerCountry = Instance.new("TextLabel")
-playerCountry.Name = "PlayerCountry"
-playerCountry.Size = UDim2.new(0, infoWidth, 0, isMobile and 16 or 20)
-playerCountry.Position = UDim2.new(0, avatarSize + 20, 0, isMobile and 46 or 55)
-playerCountry.BackgroundTransparency = 1
-playerCountry.Text = "Country: Unknown"
-playerCountry.TextColor3 = primaryGreen
-playerCountry.TextScaled = true
-playerCountry.Font = Enum.Font.Gotham
-playerCountry.TextXAlignment = Enum.TextXAlignment.Left
-playerCountry.Parent = playerSection
+-- País (simulado)
+local country = Instance.new("TextLabel")
+country.Size = UDim2.new(1, 0, 0, 15)
+country.Position = UDim2.new(0, 0, 0, 45)
+country.BackgroundTransparency = 1
+country.Text = "🌍 Global"
+country.TextColor3 = Color3.fromRGB(200, 200, 200)
+country.TextScaled = true
+country.Font = Enum.Font.Gotham
+country.Parent = playerInfo
 
-local playerStatus = Instance.new("TextLabel")
-playerStatus.Name = "PlayerStatus"
-playerStatus.Size = UDim2.new(0, infoWidth, 0, isMobile and 16 or 20)
-playerStatus.Position = UDim2.new(0, avatarSize + 20, 0, isMobile and 62 or 75)
-playerStatus.BackgroundTransparency = 1
-playerStatus.Text = "Status: Online"
-playerStatus.TextColor3 = primaryGreen
-playerStatus.TextScaled = true
-playerStatus.Font = Enum.Font.Gotham
-playerStatus.TextXAlignment = Enum.TextXAlignment.Left
-playerStatus.Parent = playerSection
+-- Status
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, 0, 0, 15)
+status.Position = UDim2.new(0, 0, 0, 60)
+status.BackgroundTransparency = 1
+status.Text = "🟢 Online"
+status.TextColor3 = Color3.fromRGB(0, 255, 127)
+status.TextScaled = true
+status.Font = Enum.Font.Gotham
+status.Parent = playerInfo
 
--- Título principal (responsive)
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, -20, 0, isMobile and 35 or 40)
-titleLabel.Position = UDim2.new(0, 10, 0, isMobile and 120 or 140)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "XM StealAbrainrot MX"
-titleLabel.TextColor3 = primaryGreen
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = contentParent
+-- Título principal
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.Position = UDim2.new(0, 0, 0, 110)
+title.BackgroundTransparency = 1
+title.Text = "XMStealAbrainrotMX"
+title.TextColor3 = Color3.fromRGB(0, 255, 127)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.Parent = container
 
--- Subtítulo (responsive)
-local subtitleLabel = Instance.new("TextLabel")
-subtitleLabel.Name = "SubtitleLabel"
-subtitleLabel.Size = UDim2.new(1, -20, 0, isMobile and 18 or 20)
-subtitleLabel.Position = UDim2.new(0, 10, 0, isMobile and 155 or 180)
-subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Text = "(Trial panel 3 days)"
-subtitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-subtitleLabel.TextScaled = true
-subtitleLabel.Font = Enum.Font.Gotham
-subtitleLabel.Parent = contentParent
+-- Subtítulo
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, 0, 0, 25)
+subtitle.Position = UDim2.new(0, 0, 0, 160)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Trial 3 days..."
+subtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+subtitle.TextScaled = true
+subtitle.Font = Enum.Font.Gotham
+subtitle.Parent = container
 
--- Campo de texto para la key (responsive)
-local keyTextBox = Instance.new("TextBox")
-keyTextBox.Name = "KeyTextBox"
-keyTextBox.Size = UDim2.new(1, -40, 0, isMobile and 40 or 50)
-keyTextBox.Position = UDim2.new(0, 20, 0, isMobile and 185 or 220)
-keyTextBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-keyTextBox.BorderSizePixel = 0
-keyTextBox.Text = ""
-keyTextBox.PlaceholderText = "Place your key here..."
-keyTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyTextBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
-keyTextBox.TextScaled = true
-keyTextBox.Font = Enum.Font.Gotham
-keyTextBox.Parent = contentParent
+-- Campo de entrada de clave
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(1, 0, 0, 50)
+keyInput.Position = UDim2.new(0, 0, 0, 210)
+keyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+keyInput.BorderSizePixel = 0
+keyInput.Text = ""
+keyInput.PlaceholderText = "Place your key here..."
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+keyInput.TextScaled = true
+keyInput.Font = Enum.Font.Gotham
+keyInput.Parent = container
 
-local keyTextBoxCorner = Instance.new("UICorner")
-keyTextBoxCorner.CornerRadius = UDim.new(0, isMobile and 8 or 10)
-keyTextBoxCorner.Parent = keyTextBox
+local keyInputCorner = Instance.new("UICorner")
+keyInputCorner.CornerRadius = UDim.new(0, 10)
+keyInputCorner.Parent = keyInput
 
-local keyTextBoxStroke = Instance.new("UIStroke")
-keyTextBoxStroke.Color = primaryGreen
-keyTextBoxStroke.Thickness = isMobile and 1 or 2
-keyTextBoxStroke.Parent = keyTextBox
+local keyInputStroke = Instance.new("UIStroke")
+keyInputStroke.Color = Color3.fromRGB(0, 255, 127)
+keyInputStroke.Thickness = 2
+keyInputStroke.Parent = keyInput
 
--- Función para crear botones (responsive)
-local function createButton(name, text, position, parent)
-    local buttonWidth = isMobile and (panelWidth - 50) / 2 or 160
-    local buttonHeight = isMobile and 35 or 40
-    
+-- Función para crear botones
+local function createButton(text, position, color)
     local button = Instance.new("TextButton")
-    button.Name = name
-    button.Size = UDim2.new(0, buttonWidth, 0, buttonHeight)
+    button.Size = UDim2.new(0.45, 0, 0, 45)
     button.Position = position
-    button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    button.BackgroundColor3 = color
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.TextScaled = true
     button.Font = Enum.Font.GothamBold
-    button.Parent = parent
+    button.Parent = container
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, isMobile and 8 or 10)
+    buttonCorner.CornerRadius = UDim.new(0, 10)
     buttonCorner.Parent = button
     
     local buttonStroke = Instance.new("UIStroke")
-    buttonStroke.Color = primaryGreen
-    buttonStroke.Thickness = isMobile and 1 or 2
+    buttonStroke.Color = Color3.fromRGB(0, 255, 127)
+    buttonStroke.Thickness = 2
     buttonStroke.Parent = button
+    
+    -- Efecto hover
+    button.MouseEnter:Connect(function()
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(color.R * 255 + 20, color.G * 255 + 20, color.B * 255 + 20)})
+        tween:Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = color})
+        tween:Play()
+    end)
     
     return button
 end
 
--- Botones (responsive)
-local buttonY = isMobile and 240 or 290
-local getKeyButton = createButton("GetKeyButton", "Get Key", UDim2.new(0, 20, 0, buttonY), contentParent)
-local submitButton = createButton("SubmitButton", "Submit", UDim2.new(0, isMobile and panelWidth/2 + 5 or 200, 0, buttonY), contentParent)
+-- Botón Get Key
+local getKeyButton = createButton("Get Key", UDim2.new(0, 0, 0, 280), Color3.fromRGB(50, 50, 70))
 
--- Función para crear toast (responsive)
-local function showToast(message)
-    local toastWidth = isMobile and screenSize.X * 0.9 or 350
-    local toast = Instance.new("Frame")
-    toast.Name = "Toast"
-    toast.Size = UDim2.new(0, toastWidth, 0, isMobile and 50 or 60)
-    toast.Position = UDim2.new(0.5, -toastWidth/2, 1, isMobile and -120 or -150)
-    toast.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    toast.BorderSizePixel = 0
-    toast.Parent = screenGui
-    
-    local toastCorner = Instance.new("UICorner")
-    toastCorner.CornerRadius = UDim.new(0, isMobile and 8 or 10)
-    toastCorner.Parent = toast
-    
-    local toastStroke = Instance.new("UIStroke")
-    toastStroke.Color = primaryGreen
-    toastStroke.Thickness = isMobile and 1 or 2
-    toastStroke.Parent = toast
-    
-    local toastLabel = Instance.new("TextLabel")
-    toastLabel.Size = UDim2.new(1, -20, 1, -10)
-    toastLabel.Position = UDim2.new(0, 10, 0, 5)
-    toastLabel.BackgroundTransparency = 1
-    toastLabel.Text = message
-    toastLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toastLabel.TextScaled = true
-    toastLabel.Font = Enum.Font.Gotham
-    toastLabel.TextWrapped = true
-    toastLabel.Parent = toast
-    
-    -- Animación de entrada
-    toast.Position = UDim2.new(0.5, -toastWidth/2, 1, 0)
-    local tweenIn = TweenService:Create(toast, TweenInfo.new(0.3, Enum.EasingStyle.Back), {
-        Position = UDim2.new(0.5, -toastWidth/2, 1, isMobile and -120 or -150)
+-- Botón Submit
+local submitButton = createButton("Submit", UDim2.new(0.55, 0, 0, 280), Color3.fromRGB(0, 150, 75))
+
+-- Animación de entrada
+mainPanel.Position = UDim2.new(0.5, -200, 1.5, 0)
+local enterTween = TweenService:Create(mainPanel, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Position = UDim2.new(0.5, -200, 0.5, -250)
+})
+enterTween:Play()
+
+-- Animación de las decoraciones
+for i, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
+    decoration.Size = UDim2.new(0, 0, 0, 0)
+    wait(0.1)
+    local sizeTween = TweenService:Create(decoration, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 60, 0, 60)
     })
-    tweenIn:Play()
+    sizeTween:Play()
+end
+
+-- Continuación del archivo anterior
+-- File: /StarterGui/ModernPanel.lua
+
+-- Funcionalidad de los botones
+getKeyButton.MouseButton1Click:Connect(function()
+    -- Animación de click
+    local clickTween = TweenService:Create(getKeyButton, TweenInfo.new(0.1), {Size = UDim2.new(0.43, 0, 0, 43)})
+    clickTween:Play()
+    clickTween.Completed:Connect(function()
+        local returnTween = TweenService:Create(getKeyButton, TweenInfo.new(0.1), {Size = UDim2.new(0.45, 0, 0, 45)})
+        returnTween:Play()
+    end)
     
-    -- Animación de salida después de 3 segundos
-    spawn(function()
-        wait(3)
-        local tweenOut = TweenService:Create(toast, TweenInfo.new(0.3, Enum.EasingStyle.Back), {
-            Position = UDim2.new(0.5, -toastWidth/2, 1, 0)
-        })
-        tweenOut:Play()
-        tweenOut.Completed:Connect(function()
-            toast:Destroy()
+    -- Aquí puedes agregar la lógica para obtener la clave
+    print("Get Key button clicked!")
+    -- Ejemplo: abrir una página web o mostrar un mensaje
+end)
+
+submitButton.MouseButton1Click:Connect(function()
+    -- Animación de click
+    local clickTween = TweenService:Create(submitButton, TweenInfo.new(0.1), {Size = UDim2.new(0.43, 0, 0, 43)})
+    clickTween:Play()
+    clickTween.Completed:Connect(function()
+        local returnTween = TweenService:Create(submitButton, TweenInfo.new(0.1), {Size = UDim2.new(0.45, 0, 0, 45)})
+        returnTween:Play()
+    end)
+    
+    -- Validar la clave ingresada
+    local enteredKey = keyInput.Text
+    if enteredKey ~= "" then
+        print("Key submitted:", enteredKey)
+        -- Aquí puedes agregar la lógica de validación de la clave
+        
+        -- Ejemplo de validación simple
+        if enteredKey == "VALID_KEY_123" then
+            -- Clave válida - cerrar el panel con animación
+            local exitTween = TweenService:Create(mainPanel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Position = UDim2.new(0.5, -200, -1.5, 0)
+            })
+            exitTween:Play()
+            exitTween.Completed:Connect(function()
+                screenGui:Destroy()
+            end)
+        else
+            -- Clave inválida - efecto de error
+            local originalColor = keyInputStroke.Color
+            keyInputStroke.Color = Color3.fromRGB(255, 50, 50)
+            keyInput.Text = ""
+            keyInput.PlaceholderText = "Invalid key! Try again..."
+            
+            wait(2)
+            keyInputStroke.Color = originalColor
+            keyInput.PlaceholderText = "Place your key here..."
+        end
+    else
+        -- Campo vacío - efecto de advertencia
+        keyInput.PlaceholderText = "Please enter a key first!"
+        local shakeTween = TweenService:Create(keyInput, TweenInfo.new(0.1), {Position = UDim2.new(0, 5, 0, 210)})
+        shakeTween:Play()
+        shakeTween.Completed:Connect(function()
+            local returnTween = TweenService:Create(keyInput, TweenInfo.new(0.1), {Position = UDim2.new(0, 0, 0, 210)})
+            returnTween:Play()
         end)
+    end
+end)
+
+-- Efecto de respiración para el borde del panel
+spawn(function()
+    while mainPanel.Parent do
+        local breatheTween1 = TweenService:Create(panelStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0.3
+        })
+        breatheTween1:Play()
+        breatheTween1.Completed:Wait()
+        
+        local breatheTween2 = TweenService:Create(panelStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0
+        })
+        breatheTween2:Play()
+        breatheTween2.Completed:Wait()
+    end
+end)
+
+-- Efecto de rotación para las decoraciones de las esquinas
+spawn(function()
+    while background.Parent do
+        for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
+            local rotateTween = TweenService:Create(decoration, TweenInfo.new(4, Enum.EasingStyle.Linear), {
+                Rotation = decoration.Rotation + 360
+            })
+            rotateTween:Play()
+        end
+        wait(4)
+    end
+end)
+
+-- Efecto de partículas en el fondo
+local function createParticle()
+    local particle = Instance.new("Frame")
+    particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
+    particle.Position = UDim2.new(math.random(), 0, 1.1, 0)
+    particle.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+    particle.BackgroundTransparency = 0.7
+    particle.BorderSizePixel = 0
+    particle.Parent = background
+    
+    local particleCorner = Instance.new("UICorner")
+    particleCorner.CornerRadius = UDim.new(1, 0)
+    particleCorner.Parent = particle
+    
+    local moveTween = TweenService:Create(particle, TweenInfo.new(math.random(3, 8)), {
+        Position = UDim2.new(math.random(), 0, -0.1, 0),
+        BackgroundTransparency = 1
+    })
+    moveTween:Play()
+    moveTween.Completed:Connect(function()
+        particle:Destroy()
     end)
 end
 
--- Funcionalidad del botón Get Key
-getKeyButton.MouseButton1Click:Connect(function()
-    setclipboard("https://zamasxmodder.github.io/PageFreeTrial3DaysKey/")
-    spawn(function()
-        showToast("Your key has been copied! Go and paste it in your preferred browser...")
-    end)
-    
-    local originalColor = getKeyButton.BackgroundColor3
-    getKeyButton.BackgroundColor3 = primaryGreen
-    wait(0.1)
-    getKeyButton.BackgroundColor3 = originalColor
-end)
-
--- Funcionalidad del botón Submit
-submitButton.MouseButton1Click:Connect(function()
-    local keyText = keyTextBox.Text
-    
-    if keyText == "" then
-        spawn(function()
-            showToast("Please enter a key before submitting!")
-        end)
-        return
+-- Generar partículas continuamente
+spawn(function()
+    while background.Parent do
+        createParticle()
+        wait(math.random(1, 3))
     end
-    
-    local originalColor = submitButton.BackgroundColor3
-    submitButton.BackgroundColor3 = primaryGreen
-    wait(0.1)
-    submitButton.BackgroundColor3 = originalColor
-    
-    spawn(function()
-        showToast("Key submitted successfully! Validating...")
-    end)
-    
-    wait(2)
-    spawn(function()
-        showToast("Key validated! Welcome to XM StealAbrainrot MX!")
-    end)
 end)
 
--- Efectos hover para los botones (solo en PC)
-if not isMobile then
-    local function addHoverEffect(button)
-        button.MouseEnter:Connect(function()
-            local tween = TweenService:Create(button, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-            })
-            tween:Play()
-        end)
+-- Responsive design - ajustar para diferentes tamaños de pantalla
+local function updateLayout()
+    local viewportSize = workspace.CurrentCamera.ViewportSize
+    local isSmallScreen = viewportSize.X < 800 or viewportSize.Y < 600
+    
+    if isSmallScreen then
+        -- Ajustes para pantallas pequeñas (móvil)
+        mainPanel.Size = UDim2.new(0.9, 0, 0.8, 0)
+        mainPanel.Position = UDim2.new(0.05, 0, 0.1, 0)
         
-        button.MouseLeave:Connect(function()
-            local tween = TweenService:Create(button, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            })
-            tween:
+        -- Ajustar decoraciones para pantallas pequeñas
+        for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
+            decoration.Size = UDim2.new(0, 40, 0, 40)
+        end
+    else
+        -- Ajustes para pantallas grandes (PC)
+        mainPanel.Size = UDim2.new(0, 400, 0, 500)
+        mainPanel.Position = UDim2.new(0.5, -200, 0.5, -250)
+        
+        -- Restaurar tamaño original de decoraciones
+        for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
+            decoration.Size = UDim2.new(0, 60, 0, 60)
+        end
+    end
+end
+
+-- Actualizar layout al cambiar el tamaño de la ventana
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateLayout)
+updateLayout() -- Aplicar ajustes iniciales
+
+-- Cerrar panel con tecla ESC
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Escape then
+        local exitTween = TweenService:Create(mainPanel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Position = UDim2.new(0.5, -200, 1.5, 0)
+        })
+        exitTween:Play()
+        exitTween.Completed:Connect(function()
+            screenGui:Destroy()
+        end)
+    end
+end)
+
+print("Modern Panel GUI loaded successfully!")
