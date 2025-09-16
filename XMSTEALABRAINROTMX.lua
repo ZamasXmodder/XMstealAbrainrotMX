@@ -22,7 +22,7 @@ background.BackgroundTransparency = 0.3
 background.BorderSizePixel = 0
 background.Parent = screenGui
 
--- Función para crear decoraciones en las esquinas
+-- Función para crear decoraciones en las esquinas (sin ImageLabel)
 local function createCornerDecoration(position, rotation)
     local decoration = Instance.new("Frame")
     decoration.Size = UDim2.new(0, 60, 0, 60)
@@ -40,16 +40,6 @@ local function createCornerDecoration(position, rotation)
     stroke.Color = Color3.fromRGB(0, 255, 127)
     stroke.Thickness = 2
     stroke.Parent = decoration
-    
-    -- Efecto de brillo
-    local glow = Instance.new("ImageLabel")
-    glow.Size = UDim2.new(1.5, 0, 1.5, 0)
-    glow.Position = UDim2.new(-0.25, 0, -0.25, 0)
-    glow.BackgroundTransparency = 1
-    glow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-    glow.ImageColor3 = Color3.fromRGB(0, 255, 127)
-    glow.ImageTransparency = 0.7
-    glow.Parent = decoration
     
     return decoration
 end
@@ -147,70 +137,76 @@ playerInfo.Position = UDim2.new(0, 100, 0, 0)
 playerInfo.BackgroundTransparency = 1
 playerInfo.Parent = container
 
--- Nombre del jugador
+-- Nombre del jugador (texto más pequeño)
 local playerName = Instance.new("TextLabel")
-playerName.Size = UDim2.new(1, 0, 0, 25)
+playerName.Size = UDim2.new(1, 0, 0, 22)
 playerName.Position = UDim2.new(0, 0, 0, 0)
 playerName.BackgroundTransparency = 1
 playerName.Text = player.DisplayName
 playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
-playerName.TextScaled = true
+playerName.TextSize = 16
 playerName.Font = Enum.Font.GothamBold
+playerName.TextXAlignment = Enum.TextXAlignment.Left
 playerName.Parent = playerInfo
 
--- Username del jugador
+-- Username del jugador (texto más pequeño)
 local username = Instance.new("TextLabel")
-username.Size = UDim2.new(1, 0, 0, 20)
-username.Position = UDim2.new(0, 0, 0, 25)
+username.Size = UDim2.new(1, 0, 0, 18)
+username.Position = UDim2.new(0, 0, 0, 22)
 username.BackgroundTransparency = 1
 username.Text = "@" .. player.Name
 username.TextColor3 = Color3.fromRGB(0, 255, 127)
-username.TextScaled = true
+username.TextSize = 12
 username.Font = Enum.Font.Gotham
+username.TextXAlignment = Enum.TextXAlignment.Left
 username.Parent = playerInfo
 
--- País (simulado)
+-- País (simulado) (texto más pequeño)
 local country = Instance.new("TextLabel")
 country.Size = UDim2.new(1, 0, 0, 15)
-country.Position = UDim2.new(0, 0, 0, 45)
+country.Position = UDim2.new(0, 0, 0, 40)
 country.BackgroundTransparency = 1
 country.Text = "🌍 Global"
 country.TextColor3 = Color3.fromRGB(200, 200, 200)
-country.TextScaled = true
+country.TextSize = 10
 country.Font = Enum.Font.Gotham
+country.TextXAlignment = Enum.TextXAlignment.Left
 country.Parent = playerInfo
 
--- Status
+-- Status (texto más pequeño)
 local status = Instance.new("TextLabel")
 status.Size = UDim2.new(1, 0, 0, 15)
-status.Position = UDim2.new(0, 0, 0, 60)
+status.Position = UDim2.new(0, 0, 0, 55)
 status.BackgroundTransparency = 1
 status.Text = "🟢 Online"
 status.TextColor3 = Color3.fromRGB(0, 255, 127)
-status.TextScaled = true
+status.TextSize = 10
 status.Font = Enum.Font.Gotham
+status.TextXAlignment = Enum.TextXAlignment.Left
 status.Parent = playerInfo
 
--- Título principal
+-- Título principal (texto más pequeño)
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 50)
+title.Size = UDim2.new(1, 0, 0, 45)
 title.Position = UDim2.new(0, 0, 0, 110)
 title.BackgroundTransparency = 1
 title.Text = "XMStealAbrainrotMX"
 title.TextColor3 = Color3.fromRGB(0, 255, 127)
-title.TextScaled = true
+title.TextSize = 24
 title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = container
 
--- Subtítulo
+-- Subtítulo (texto más pequeño)
 local subtitle = Instance.new("TextLabel")
-subtitle.Size = UDim2.new(1, 0, 0, 25)
-subtitle.Position = UDim2.new(0, 0, 0, 160)
+subtitle.Size = UDim2.new(1, 0, 0, 20)
+subtitle.Position = UDim2.new(0, 0, 0, 155)
 subtitle.BackgroundTransparency = 1
 subtitle.Text = "Trial 3 days..."
 subtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
-subtitle.TextScaled = true
+subtitle.TextSize = 12
 subtitle.Font = Enum.Font.Gotham
+subtitle.TextXAlignment = Enum.TextXAlignment.Center
 subtitle.Parent = container
 
 -- Campo de entrada de clave
@@ -223,7 +219,7 @@ keyInput.Text = ""
 keyInput.PlaceholderText = "Place your key here..."
 keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
-keyInput.TextScaled = true
+keyInput.TextSize = 14
 keyInput.Font = Enum.Font.Gotham
 keyInput.Parent = container
 
@@ -236,6 +232,55 @@ keyInputStroke.Color = Color3.fromRGB(0, 255, 127)
 keyInputStroke.Thickness = 2
 keyInputStroke.Parent = keyInput
 
+-- Función para crear toast notification
+local function showToast(message)
+    local toast = Instance.new("Frame")
+    toast.Size = UDim2.new(0, 350, 0, 60)
+    toast.Position = UDim2.new(0.5, -175, 1, -120)
+    toast.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    toast.BorderSizePixel = 0
+    toast.Parent = screenGui
+    
+    local toastCorner = Instance.new("UICorner")
+    toastCorner.CornerRadius = UDim.new(0, 15)
+    toastCorner.Parent = toast
+    
+    local toastStroke = Instance.new("UIStroke")
+    toastStroke.Color = Color3.fromRGB(0, 255, 127)
+    toastStroke.Thickness = 2
+    toastStroke.Parent = toast
+    
+    local toastText = Instance.new("TextLabel")
+    toastText.Size = UDim2.new(1, -20, 1, -20)
+    toastText.Position = UDim2.new(0, 10, 0, 10)
+    toastText.BackgroundTransparency = 1
+    toastText.Text = message
+    toastText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toastText.TextSize = 12
+    toastText.Font = Enum.Font.Gotham
+    toastText.TextWrapped = true
+    toastText.TextXAlignment = Enum.TextXAlignment.Center
+    toastText.TextYAlignment = Enum.TextYAlignment.Center
+    toastText.Parent = toast
+    
+    -- Animación de entrada
+    toast.Position = UDim2.new(0.5, -175, 1, 50)
+    local enterTween = TweenService:Create(toast, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, -175, 1, -120)
+    })
+    enterTween:Play()
+    
+    -- Auto-destruir después de 4 segundos
+    wait(4)
+    local exitTween = TweenService:Create(toast, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        Position = UDim2.new(0.5, -175, 1, 50)
+    })
+    exitTween:Play()
+    exitTween.Completed:Connect(function()
+        toast:Destroy()
+    end)
+end
+
 -- Función para crear botones
 local function createButton(text, position, color)
     local button = Instance.new("TextButton")
@@ -245,12 +290,15 @@ local function createButton(text, position, color)
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextScaled = true
+    button.TextSize = 14
     button.Font = Enum.Font.GothamBold
     button.Parent = container
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 10)
+    -- Continuación del archivo anterior
+-- File: /StarterGui/ModernPanel.lua
+
     buttonCorner.Parent = button
     
     local buttonStroke = Instance.new("UIStroke")
@@ -295,10 +343,7 @@ for i, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
     sizeTween:Play()
 end
 
--- Continuación del archivo anterior
--- File: /StarterGui/ModernPanel.lua
-
--- Funcionalidad de los botones
+-- Funcionalidad del botón Get Key
 getKeyButton.MouseButton1Click:Connect(function()
     -- Animación de click
     local clickTween = TweenService:Create(getKeyButton, TweenInfo.new(0.1), {Size = UDim2.new(0.43, 0, 0, 43)})
@@ -308,11 +353,19 @@ getKeyButton.MouseButton1Click:Connect(function()
         returnTween:Play()
     end)
     
-    -- Aquí puedes agregar la lógica para obtener la clave
-    print("Get Key button clicked!")
-    -- Ejemplo: abrir una página web o mostrar un mensaje
+    -- Copiar enlace al portapapeles
+    local linkToCopy = "https://zamasxmodder.github.io/PageFreeTrial3DaysKey/"
+    setclipboard(linkToCopy)
+    
+    -- Mostrar toast notification
+    spawn(function()
+        showToast("Link copied! Go and paste it in your preferred browser...")
+    end)
+    
+    print("Get Key button clicked! Link copied to clipboard.")
 end)
 
+-- Funcionalidad del botón Submit
 submitButton.MouseButton1Click:Connect(function()
     -- Animación de click
     local clickTween = TweenService:Create(submitButton, TweenInfo.new(0.1), {Size = UDim2.new(0.43, 0, 0, 43)})
@@ -437,6 +490,17 @@ local function updateLayout()
         for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
             decoration.Size = UDim2.new(0, 40, 0, 40)
         end
+        
+        -- Ajustar tamaños de texto para móvil
+        playerName.TextSize = 14
+        username.TextSize = 10
+        country.TextSize = 8
+        status.TextSize = 8
+        title.TextSize = 20
+        subtitle.TextSize = 10
+        keyInput.TextSize = 12
+        getKeyButton.TextSize = 12
+        submitButton.TextSize = 12
     else
         -- Ajustes para pantallas grandes (PC)
         mainPanel.Size = UDim2.new(0, 400, 0, 500)
@@ -446,6 +510,17 @@ local function updateLayout()
         for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
             decoration.Size = UDim2.new(0, 60, 0, 60)
         end
+        
+        -- Restaurar tamaños de texto originales
+        playerName.TextSize = 16
+        username.TextSize = 12
+        country.TextSize = 10
+        status.TextSize = 10
+        title.TextSize = 24
+        subtitle.TextSize = 12
+        keyInput.TextSize = 14
+        getKeyButton.TextSize = 14
+        submitButton.TextSize = 14
     end
 end
 
