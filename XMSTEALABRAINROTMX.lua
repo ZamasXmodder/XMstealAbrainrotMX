@@ -129,7 +129,7 @@ local function showUnauthorizedMessage()
     descriptionLabel.Size = UDim2.new(1, 0, 0, 80)
     descriptionLabel.Position = UDim2.new(0, 0, 0, 180)
     descriptionLabel.BackgroundTransparency = 1
-    descriptionLabel.Text = "Tu cuenta debe tener al menos 2 días de antigüedad\npara usar este script.\n\nDías de tu cuenta: " .. player.AccountAge .. " días"
+    descriptionLabel.Text = "CUENTA SIN AUTORIZACION: " .. player.AccountAge .. " días"
     descriptionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     descriptionLabel.TextSize = 14
     descriptionLabel.Font = Enum.Font.Gotham
