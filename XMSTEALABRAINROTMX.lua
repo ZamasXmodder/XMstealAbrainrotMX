@@ -5,6 +5,247 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- VERIFICACIÓN DE CUENTA NUEVA
+local function checkAccountAge()
+    local accountAge = player.AccountAge -- Días desde que se creó la cuenta
+    local minimumDays = 2
+    
+    if accountAge < minimumDays then
+        return false -- Cuenta muy nueva
+    end
+    return true -- Cuenta válida
+end
+
+-- Función para mostrar mensaje de cuenta no autorizada
+local function showUnauthorizedMessage()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "UnauthorizedGUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = playerGui
+    
+    -- Fondo rojo semi-transparente
+    local backgroundFrame = Instance.new("Frame")
+    backgroundFrame.Name = "BackgroundFrame"
+    backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
+    backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
+    backgroundFrame.BackgroundColor3 = Color3.fromRGB(139, 0, 0)
+    backgroundFrame.BackgroundTransparency = 0.4
+    backgroundFrame.BorderSizePixel = 0
+    backgroundFrame.Parent = screenGui
+    
+    -- Decoraciones de advertencia en las esquinas
+    local function createWarningDecoration(position, rotation)
+        local decoration = Instance.new("Frame")
+        decoration.Size = UDim2.new(0, 80, 0, 80)
+        decoration.Position = position
+        decoration.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        decoration.BorderSizePixel = 0
+        decoration.Rotation = rotation
+        decoration.Parent = backgroundFrame
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 15)
+        corner.Parent = decoration
+        
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Color3.fromRGB(255, 50, 50)
+        stroke.Thickness = 3
+        stroke.Parent = decoration
+        
+        return decoration
+    end
+    
+    -- Crear decoraciones de advertencia
+    local warnDecor1 = createWarningDecoration(UDim2.new(0, 20, 0, 20), 45)
+    local warnDecor2 = createWarningDecoration(UDim2.new(1, -100, 0, 20), 45)
+    local warnDecor3 = createWarningDecoration(UDim2.new(0, 20, 1, -100), 45)
+    local warnDecor4 = createWarningDecoration(UDim2.new(1, -100, 1, -100), 45)
+    
+    -- Panel de mensaje
+    local messagePanel = Instance.new("Frame")
+    messagePanel.Name = "MessagePanel"
+    messagePanel.Size = UDim2.new(0, 450, 0, 350)
+    messagePanel.Position = UDim2.new(0.5, -225, 0.5, -175)
+    messagePanel.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    messagePanel.BorderSizePixel = 0
+    messagePanel.Parent = screenGui
+    
+    local panelCorner = Instance.new("UICorner")
+    panelCorner.CornerRadius = UDim.new(0, 20)
+    panelCorner.Parent = messagePanel
+    
+    local panelStroke = Instance.new("UIStroke")
+    panelStroke.Color = Color3.fromRGB(255, 0, 0)
+    panelStroke.Thickness = 4
+    panelStroke.Parent = messagePanel
+    
+    -- Sombra del panel
+    local shadow = Instance.new("Frame")
+    shadow.Size = UDim2.new(1, 10, 1, 10)
+    shadow.Position = UDim2.new(0, -5, 0, -5)
+    shadow.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    shadow.BackgroundTransparency = 0.8
+    shadow.BorderSizePixel = 0
+    shadow.ZIndex = messagePanel.ZIndex - 1
+    shadow.Parent = messagePanel
+    
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0, 25)
+    shadowCorner.Parent = shadow
+    
+    -- Contenedor para organizar elementos
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -40, 1, -40)
+    container.Position = UDim2.new(0, 20, 0, 20)
+    container.BackgroundTransparency = 1
+    container.Parent = messagePanel
+    
+    -- Icono de advertencia grande
+    local warningIcon = Instance.new("TextLabel")
+    warningIcon.Size = UDim2.new(0, 100, 0, 100)
+    warningIcon.Position = UDim2.new(0.5, -50, 0, 10)
+    warningIcon.BackgroundTransparency = 1
+    warningIcon.Text = "⚠️"
+    warningIcon.TextColor3 = Color3.fromRGB(255, 0, 0)
+    warningIcon.TextSize = 60
+    warningIcon.Font = Enum.Font.GothamBold
+    warningIcon.Parent = container
+    
+    -- Título del mensaje
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 50)
+    titleLabel.Position = UDim2.new(0, 0, 0, 120)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "CUENTA NUEVA NO AUTORIZADA"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    titleLabel.TextSize = 20
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    titleLabel.Parent = container
+    
+    -- Mensaje descriptivo
+    local descriptionLabel = Instance.new("TextLabel")
+    descriptionLabel.Size = UDim2.new(1, 0, 0, 80)
+    descriptionLabel.Position = UDim2.new(0, 0, 0, 180)
+    descriptionLabel.BackgroundTransparency = 1
+    descriptionLabel.Text = "Tu cuenta debe tener al menos 2 días de antigüedad\npara usar este script.\n\nDías de tu cuenta: " .. player.AccountAge .. " días"
+    descriptionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    descriptionLabel.TextSize = 14
+    descriptionLabel.Font = Enum.Font.Gotham
+    descriptionLabel.TextWrapped = true
+    descriptionLabel.TextXAlignment = Enum.TextXAlignment.Center
+    descriptionLabel.Parent = container
+    
+    -- Botón de cerrar
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 150, 0, 45)
+    closeButton.Position = UDim2.new(0.5, -75, 1, -65)
+    closeButton.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "CERRAR"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 14
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Parent = container
+    
+    local closeButtonCorner = Instance.new("UICorner")
+    closeButtonCorner.CornerRadius = UDim.new(0, 10)
+    closeButtonCorner.Parent = closeButton
+    
+    local closeButtonStroke = Instance.new("UIStroke")
+    closeButtonStroke.Color = Color3.fromRGB(255, 0, 0)
+    closeButtonStroke.Thickness = 2
+    closeButtonStroke.Parent = closeButton
+    
+    -- Efecto hover para el botón cerrar
+    closeButton.MouseEnter:Connect(function()
+        local tween = TweenService:Create(closeButton, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        })
+        tween:Play()
+    end)
+    
+    closeButton.MouseLeave:Connect(function()
+        local tween = TweenService:Create(closeButton, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+        })
+        tween:Play()
+    end)
+    
+    -- Funcionalidad del botón cerrar
+    closeButton.MouseButton1Click:Connect(function()
+        local exitTween = TweenService:Create(messagePanel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Position = UDim2.new(0.5, -225, -1.5, 0)
+        })
+        exitTween:Play()
+        exitTween.Completed:Connect(function()
+            screenGui:Destroy()
+        end)
+    end)
+    
+    -- Animación de entrada del panel
+    messagePanel.Position = UDim2.new(0.5, -225, -1.5, 0)
+    local panelTween = TweenService:Create(messagePanel, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, -225, 0.5, -175)
+    })
+    panelTween:Play()
+    
+    -- Animación de las decoraciones
+    for i, decoration in pairs({warnDecor1, warnDecor2, warnDecor3, warnDecor4}) do
+        decoration.Size = UDim2.new(0, 0, 0, 0)
+        spawn(function()
+            wait(i * 0.1)
+            local sizeTween = TweenService:Create(decoration, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 80, 0, 80)
+            })
+            sizeTween:Play()
+        end)
+    end
+    
+    -- Efecto pulsante del borde
+    spawn(function()
+        while messagePanel.Parent do
+            local tween1 = TweenService:Create(panelStroke, TweenInfo.new(1, Enum.EasingStyle.Sine), {
+                Transparency = 0.5
+            })
+            tween1:Play()
+            tween1.Completed:Wait()
+            
+            local tween2 = TweenService:Create(panelStroke, TweenInfo.new(1, Enum.EasingStyle.Sine), {
+                Transparency = 0
+            })
+            tween2:Play()
+            tween2.Completed:Wait()
+        end
+    end)
+    
+    -- Rotación de las decoraciones
+    spawn(function()
+        while backgroundFrame.Parent do
+            for _, decoration in pairs({warnDecor1, warnDecor2, warnDecor3, warnDecor4}) do
+                local rotateTween = TweenService:Create(decoration, TweenInfo.new(3, Enum.EasingStyle.Linear), {
+                    Rotation = decoration.Rotation + 360
+                })
+                rotateTween:Play()
+            end
+            wait(3)
+        end
+    end)
+    
+    return
+end
+
+-- VERIFICAR EDAD DE LA CUENTA ANTES DE CONTINUAR
+if not checkAccountAge() then
+    showUnauthorizedMessage()
+    return -- Detener la ejecución del script principal
+end
+
+-- ================================
+-- AQUÍ CONTINÚA EL SCRIPT ORIGINAL
+-- ================================
+
 -- Crear ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ModernPanelGui"
@@ -290,9 +531,6 @@ local function createButton(text, position, color)
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    -- Continuación del archivo anterior
--- File: /StarterGui/ModernPanel.lua
-
     button.TextSize = 14
     button.Font = Enum.Font.GothamBold
     button.Parent = container
@@ -541,4 +779,4 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Modern Panel GUI loaded successfully!")
+print("Modern Panel GUI loaded successfully! Account verified: " .. player.AccountAge .. " days old.")
