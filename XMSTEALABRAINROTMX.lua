@@ -14,10 +14,15 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SakuraBrainrotPanel"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.IgnoreGuiInset = true -- Para cubrir completamente la pantalla incluyendo topbar
+screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- Frame de fondo completo (cubre absolutamente toda la pantalla)
+-- VERIFICACIÓN DE CUENTA (Mínimo 5 días)
+local accountAge = player.AccountAge
+local minimumDays = 5
+local hasAccess = accountAge >= minimumDays
+
+-- Frame de fondo completo
 local backgroundFrame = Instance.new("Frame")
 backgroundFrame.Name = "Background"
 backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -55,7 +60,7 @@ sakuraContainer.BackgroundTransparency = 1
 sakuraContainer.ClipsDescendants = false
 sakuraContainer.Parent = backgroundFrame
 
--- Decoraciones sakura flotantes (esquinas)
+-- Decoraciones sakura flotantes
 local function createFloatingSakura(position, emoji)
     local sakura = Instance.new("TextLabel")
     sakura.Size = UDim2.new(0, 40, 0, 40)
@@ -66,7 +71,6 @@ local function createFloatingSakura(position, emoji)
     sakura.Font = Enum.Font.Gotham
     sakura.Parent = backgroundFrame
     
-    -- Animación flotante
     local floatTween = TweenService:Create(sakura,
         TweenInfo.new(math.random(4, 8), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
         {
@@ -80,7 +84,6 @@ local function createFloatingSakura(position, emoji)
     return sakura
 end
 
--- Crear decoraciones sakura en las esquinas
 createFloatingSakura(UDim2.new(0.05, 0, 0.1, 0), "🌸")
 createFloatingSakura(UDim2.new(0.9, 0, 0.15, 0), "🌺")
 createFloatingSakura(UDim2.new(0.1, 0, 0.8, 0), "🌸")
@@ -88,76 +91,64 @@ createFloatingSakura(UDim2.new(0.85, 0, 0.75, 0), "🌺")
 createFloatingSakura(UDim2.new(0.15, 0, 0.3, 0), "🌸")
 createFloatingSakura(UDim2.new(0.8, 0, 0.4, 0), "🌺")
 
--- Panel de status (lado izquierdo)
-local statusPanel = Instance.new("Frame")
-statusPanel.Name = "StatusPanel"
-statusPanel.Size = UDim2.new(0, 280, 0, 420)
-statusPanel.Position = UDim2.new(0, 30, 0.5, -210)
-statusPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-statusPanel.BackgroundTransparency = 0.85
-statusPanel.BorderSizePixel = 0
-statusPanel.Parent = screenGui
-
--- Corner radius para el panel de status
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 20)
-statusCorner.Parent = statusPanel
-
--- Borde del panel de status
-local statusStroke = Instance.new("UIStroke")
-statusStroke.Color = Color3.fromRGB(186, 85, 211)
-statusStroke.Thickness = 2
-statusStroke.Transparency = 0.6
-statusStroke.Parent = statusPanel
-
--- Gradiente en el borde del status
-local statusStrokeGradient = Instance.new("UIGradient")
-statusStrokeGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(186, 85, 211)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 105, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(147, 112, 219))
-}
-statusStrokeGradient.Parent = statusStroke
-
--- Título del panel de status
-local statusTitle = Instance.new("TextLabel")
-statusTitle.Name = "StatusTitle"
-statusTitle.Size = UDim2.new(1, -20, 0, 50)
-statusTitle.Position = UDim2.new(0, 10, 0, 15)
-statusTitle.BackgroundTransparency = 1
-statusTitle.Text = "STATUS ONLINE CLIENTS"
-statusTitle.TextColor3 = Color3.fromRGB(147, 112, 219)
-statusTitle.TextScaled = true
-statusTitle.Font = Enum.Font.GothamBold
-statusTitle.Parent = statusPanel
-
--- Gradiente del título de status
-local statusTitleGradient = Instance.new("UIGradient")
-statusTitleGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(147, 112, 219)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(186, 85, 211)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(138, 43, 226))
-}
-statusTitleGradient.Rotation = 45
-statusTitleGradient.Parent = statusTitle
-
--- ScrollingFrame para la lista de jugadores
-local playersScrollFrame = Instance.new("ScrollingFrame")
-playersScrollFrame.Name = "PlayersScrollFrame"
-playersScrollFrame.Size = UDim2.new(1, -20, 1, -80)
-playersScrollFrame.Position = UDim2.new(0, 10, 0, 70)
-playersScrollFrame.BackgroundTransparency = 1
-playersScrollFrame.ScrollBarThickness = 6
-playersScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(186, 85, 211)
-playersScrollFrame.ScrollBarImageTransparency = 0.3
-playersScrollFrame.BorderSizePixel = 0
-playersScrollFrame.Parent = statusPanel
-
--- Layout para organizar los jugadores
-local playersLayout = Instance.new("UIListLayout")
-playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
-playersLayout.Padding = UDim.new(0, 8)
-playersLayout.Parent = playersScrollFrame
+-- SI NO TIENE ACCESO, MOSTRAR MENSAJE DE DENEGACIÓN
+if not hasAccess then
+    local deniedFrame = Instance.new("Frame")
+    deniedFrame.Name = "AccessDenied"
+    deniedFrame.Size = UDim2.new(0, 500, 0, 300)
+    deniedFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+    deniedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    deniedFrame.BorderSizePixel = 0
+    deniedFrame.Parent = screenGui
+    
+    local deniedCorner = Instance.new("UICorner")
+    deniedCorner.CornerRadius = UDim.new(0, 25)
+    deniedCorner.Parent = deniedFrame
+    
+    local deniedStroke = Instance.new("UIStroke")
+    deniedStroke.Color = Color3.fromRGB(231, 76, 60)
+    deniedStroke.Thickness = 4
+    deniedStroke.Parent = deniedFrame
+    
+    local warningIcon = Instance.new("TextLabel")
+    warningIcon.Size = UDim2.new(0, 80, 0, 80)
+    warningIcon.Position = UDim2.new(0.5, -40, 0, 30)
+    warningIcon.BackgroundTransparency = 1
+    warningIcon.Text = "⚠️"
+    warningIcon.TextScaled = true
+    warningIcon.Font = Enum.Font.GothamBold
+    warningIcon.Parent = deniedFrame
+    
+    local deniedTitle = Instance.new("TextLabel")
+    deniedTitle.Size = UDim2.new(1, -40, 0, 50)
+    deniedTitle.Position = UDim2.new(0, 20, 0, 120)
+    deniedTitle.BackgroundTransparency = 1
+    deniedTitle.Text = "NO TIENES ACCESO AUTORIZADO"
+    deniedTitle.TextColor3 = Color3.fromRGB(231, 76, 60)
+    deniedTitle.TextScaled = true
+    deniedTitle.Font = Enum.Font.GothamBold
+    deniedTitle.Parent = deniedFrame
+    
+    local deniedSubtext = Instance.new("TextLabel")
+    deniedSubtext.Size = UDim2.new(1, -40, 0, 80)
+    deniedSubtext.Position = UDim2.new(0, 20, 0, 180)
+    deniedSubtext.BackgroundTransparency = 1
+    deniedSubtext.Text = "(ACCOUNT NOT AUTHORIZED)\n\nTu cuenta debe tener al menos " .. minimumDays .. " días.\nActualmente: " .. accountAge .. " días"
+    deniedSubtext.TextColor3 = Color3.fromRGB(200, 200, 200)
+    deniedSubtext.TextScaled = true
+    deniedSubtext.Font = Enum.Font.Gotham
+    deniedSubtext.TextWrapped = true
+    deniedSubtext.Parent = deniedFrame
+    
+    -- Animación de pulso
+    local pulseTween = TweenService:Create(deniedStroke,
+        TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        {Thickness = 6, Color = Color3.fromRGB(255, 100, 100)}
+    )
+    pulseTween:Play()
+    
+    return -- Detener la ejecución si no tiene acceso
+end
 
 -- Lista completa de nombres de usuarios
 local allUsernames = {
@@ -171,6 +162,214 @@ local allUsernames = {
     "ValeGamerzzz", "PipeMaster77", "LauCuteUwU", "Jorgito_108", "MeliGamer_15",
     "CrackXD_Samu", "FerxxoUwU88", "JuampiElNoob"
 }
+
+-- Panel de status (lado izquierdo) - MÁS PEQUEÑO
+local statusPanel = Instance.new("Frame")
+statusPanel.Name = "StatusPanel"
+statusPanel.Size = UDim2.new(0, 220, 0, 350)
+statusPanel.Position = UDim2.new(0, 20, 0.5, -175)
+statusPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+statusPanel.BackgroundTransparency = 0.85
+statusPanel.BorderSizePixel = 0
+statusPanel.Parent = screenGui
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 20)
+statusCorner.Parent = statusPanel
+
+local statusStroke = Instance.new("UIStroke")
+statusStroke.Color = Color3.fromRGB(186, 85, 211)
+statusStroke.Thickness = 2
+statusStroke.Transparency = 0.6
+statusStroke.Parent = statusPanel
+
+local statusTitle = Instance.new("TextLabel")
+statusTitle.Name = "StatusTitle"
+statusTitle.Size = UDim2.new(1, -20, 0, 40)
+statusTitle.Position = UDim2.new(0, 10, 0, 10)
+statusTitle.BackgroundTransparency = 1
+statusTitle.Text = "ONLINE CLIENTS"
+statusTitle.TextColor3 = Color3.fromRGB(147, 112, 219)
+statusTitle.TextScaled = true
+statusTitle.Font = Enum.Font.GothamBold
+statusTitle.Parent = statusPanel
+
+local playersScrollFrame = Instance.new("ScrollingFrame")
+playersScrollFrame.Name = "PlayersScrollFrame"
+playersScrollFrame.Size = UDim2.new(1, -20, 1, -60)
+playersScrollFrame.Position = UDim2.new(0, 10, 0, 55)
+playersScrollFrame.BackgroundTransparency = 1
+playersScrollFrame.ScrollBarThickness = 4
+playersScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(186, 85, 211)
+playersScrollFrame.ScrollBarImageTransparency = 0.3
+playersScrollFrame.BorderSizePixel = 0
+playersScrollFrame.Parent = statusPanel
+
+local playersLayout = Instance.new("UIListLayout")
+playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
+playersLayout.Padding = UDim.new(0, 8)
+playersLayout.Parent = playersScrollFrame
+
+-- PANEL DE INFORMACIÓN DEL JUGADOR (lado derecho) - MÁS PEQUEÑO
+local playerInfoPanel = Instance.new("Frame")
+playerInfoPanel.Name = "PlayerInfoPanel"
+playerInfoPanel.Size = UDim2.new(0, 240, 0, 400)
+playerInfoPanel.Position = UDim2.new(1, -260, 0.5, -200)
+playerInfoPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+playerInfoPanel.BackgroundTransparency = 0.85
+playerInfoPanel.BorderSizePixel = 0
+playerInfoPanel.Parent = screenGui
+
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 20)
+infoCorner.Parent = playerInfoPanel
+
+local infoStroke = Instance.new("UIStroke")
+infoStroke.Color = Color3.fromRGB(186, 85, 211)
+infoStroke.Thickness = 2
+infoStroke.Transparency = 0.6
+infoStroke.Parent = playerInfoPanel
+
+-- Título del panel de info
+local infoTitle = Instance.new("TextLabel")
+infoTitle.Size = UDim2.new(1, -20, 0, 35)
+infoTitle.Position = UDim2.new(0, 10, 0, 8)
+infoTitle.BackgroundTransparency = 1
+infoTitle.Text = "YOUR PROFILE"
+infoTitle.TextColor3 = Color3.fromRGB(147, 112, 219)
+infoTitle.TextScaled = true
+infoTitle.Font = Enum.Font.GothamBold
+infoTitle.Parent = playerInfoPanel
+
+-- Headshot del jugador - MÁS PEQUEÑO
+local headshotFrame = Instance.new("Frame")
+headshotFrame.Size = UDim2.new(0, 90, 0, 90)
+headshotFrame.Position = UDim2.new(0.5, -45, 0, 50)
+headshotFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+headshotFrame.BorderSizePixel = 0
+headshotFrame.Parent = playerInfoPanel
+
+local headshotCorner = Instance.new("UICorner")
+headshotCorner.CornerRadius = UDim.new(1, 0)
+headshotCorner.Parent = headshotFrame
+
+local headshotStroke = Instance.new("UIStroke")
+headshotStroke.Color = Color3.fromRGB(255, 105, 180)
+headshotStroke.Thickness = 3
+headshotStroke.Parent = headshotFrame
+
+local headshot = Instance.new("ImageLabel")
+headshot.Size = UDim2.new(1, -10, 1, -10)
+headshot.Position = UDim2.new(0, 5, 0, 5)
+headshot.BackgroundTransparency = 1
+headshot.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+headshot.Parent = headshotFrame
+
+local headshotImgCorner = Instance.new("UICorner")
+headshotImgCorner.CornerRadius = UDim.new(1, 0)
+headshotImgCorner.Parent = headshot
+
+-- Container de información
+local infoContainer = Instance.new("Frame")
+infoContainer.Size = UDim2.new(1, -20, 0, 240)
+infoContainer.Position = UDim2.new(0, 10, 0, 150)
+infoContainer.BackgroundTransparency = 1
+infoContainer.Parent = playerInfoPanel
+
+local infoLayout = Instance.new("UIListLayout")
+infoLayout.SortOrder = Enum.SortOrder.LayoutOrder
+infoLayout.Padding = UDim.new(0, 6)
+infoLayout.Parent = infoContainer
+
+-- Función para crear info item - MÁS COMPACTO
+local function createInfoItem(title, value, icon)
+    local itemFrame = Instance.new("Frame")
+    itemFrame.Size = UDim2.new(1, 0, 0, 35)
+    itemFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    itemFrame.BackgroundTransparency = 0.9
+    itemFrame.BorderSizePixel = 0
+    itemFrame.Parent = infoContainer
+    
+    local itemCorner = Instance.new("UICorner")
+    itemCorner.CornerRadius = UDim.new(0, 8)
+    itemCorner.Parent = itemFrame
+    
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Size = UDim2.new(0, 24, 0, 24)
+    iconLabel.Position = UDim2.new(0, 8, 0.5, -12)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Text = icon
+    iconLabel.TextScaled = true
+    iconLabel.Font = Enum.Font.Gotham
+    iconLabel.Parent = itemFrame
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(0, 60, 1, 0)
+    titleLabel.Position = UDim2.new(0, 36, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = itemFrame
+    
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(1, -105, 1, 0)
+    valueLabel.Position = UDim2.new(0, 100, 0, 0)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = value
+    valueLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
+    valueLabel.TextScaled = true
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+    valueLabel.TextWrapped = true
+    valueLabel.Parent = itemFrame
+    
+    return itemFrame
+end
+
+-- Obtener país simulado (Roblox no proporciona esta info directamente)
+local countries = {"Colombia", "Mexico", "Spain", "Argentina", "USA", "Brazil", "Chile", "Peru"}
+local playerCountry = countries[math.random(1, #countries)]
+
+-- Crear items de información
+createInfoItem("Username:", player.Name, "👤")
+createInfoItem("Display:", player.DisplayName, "✨")
+createInfoItem("User ID:", tostring(player.UserId), "🆔")
+createInfoItem("Account:", accountAge .. " days old", "📅")
+createInfoItem("Country:", playerCountry, "🌍")
+
+-- Status del jugador - MÁS COMPACTO
+local statusItem = Instance.new("Frame")
+statusItem.Size = UDim2.new(1, 0, 0, 38)
+statusItem.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+statusItem.BackgroundTransparency = 0.3
+statusItem.BorderSizePixel = 0
+statusItem.Parent = infoContainer
+
+local statusItemCorner = Instance.new("UICorner")
+statusItemCorner.CornerRadius = UDim.new(0, 8)
+statusItemCorner.Parent = statusItem
+
+local statusIcon = Instance.new("TextLabel")
+statusIcon.Size = UDim2.new(0, 24, 0, 24)
+statusIcon.Position = UDim2.new(0, 8, 0.5, -12)
+statusIcon.BackgroundTransparency = 1
+statusIcon.Text = "✅"
+statusIcon.TextScaled = true
+statusIcon.Font = Enum.Font.Gotham
+statusIcon.Parent = statusItem
+
+local statusText = Instance.new("TextLabel")
+statusText.Size = UDim2.new(1, -40, 1, 0)
+statusText.Position = UDim2.new(0, 36, 0, 0)
+statusText.BackgroundTransparency = 1
+statusText.Text = "ACCESS GRANTED"
+statusText.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusText.TextScaled = true
+statusText.Font = Enum.Font.GothamBold
+statusText.Parent = statusItem
 
 -- Función para crear un elemento de jugador
 local function createPlayerElement(username, isOnline)
@@ -186,7 +385,6 @@ local function createPlayerElement(username, isOnline)
     playerCorner.CornerRadius = UDim.new(0, 8)
     playerCorner.Parent = playerFrame
     
-    -- Indicador de estado (círculo)
     local statusIndicator = Instance.new("Frame")
     statusIndicator.Name = "StatusIndicator"
     statusIndicator.Size = UDim2.new(0, 12, 0, 12)
@@ -199,7 +397,6 @@ local function createPlayerElement(username, isOnline)
     indicatorCorner.CornerRadius = UDim.new(0.5, 0)
     indicatorCorner.Parent = statusIndicator
     
-    -- Efecto de pulso para jugadores online
     if isOnline then
         local pulseTween = TweenService:Create(statusIndicator,
             TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
@@ -208,7 +405,6 @@ local function createPlayerElement(username, isOnline)
         pulseTween:Play()
     end
     
-    -- Nombre del jugador
     local usernameLabel = Instance.new("TextLabel")
     usernameLabel.Name = "UsernameLabel"
     usernameLabel.Size = UDim2.new(1, -80, 1, 0)
@@ -221,7 +417,6 @@ local function createPlayerElement(username, isOnline)
     usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
     usernameLabel.Parent = playerFrame
     
-    -- Estado del jugador
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
     statusLabel.Size = UDim2.new(0, 50, 1, 0)
@@ -234,7 +429,6 @@ local function createPlayerElement(username, isOnline)
     statusLabel.TextXAlignment = Enum.TextXAlignment.Right
     statusLabel.Parent = playerFrame
     
-    -- Animación de entrada
     playerFrame.Size = UDim2.new(0, 0, 0, 35)
     playerFrame.BackgroundTransparency = 1
     
@@ -249,7 +443,6 @@ end
 
 -- Función para actualizar la lista de jugadores
 local function updatePlayersList()
-    -- Limpiar lista actual
     for _, child in pairs(playersScrollFrame:GetChildren()) do
         if child:IsA("Frame") and child.Name ~= "UIListLayout" then
             local exitTween = TweenService:Create(child,
@@ -263,10 +456,8 @@ local function updatePlayersList()
         end
     end
     
-    -- Esperar a que se limpie
     task.wait(0.4)
     
-    -- Seleccionar 7 jugadores aleatorios
     local selectedUsers = {}
     local usedIndices = {}
     
@@ -280,87 +471,38 @@ local function updatePlayersList()
         selectedUsers[i] = allUsernames[randomIndex]
     end
     
-    -- Crear elementos de jugadores con delay
     for i, username in ipairs(selectedUsers) do
         task.spawn(function()
-            task.wait(i * 0.1) -- Delay escalonado para efecto visual
-            local isOnline = math.random() > 0.3 -- 70% probabilidad de estar online
+            task.wait(i * 0.1)
+            local isOnline = math.random() > 0.3
             createPlayerElement(username, isOnline)
         end)
     end
     
-    -- Actualizar tamaño del scroll
     task.wait(1)
     playersScrollFrame.CanvasSize = UDim2.new(0, 0, 0, playersLayout.AbsoluteContentSize.Y + 10)
 end
 
--- Panel principal con escalado automático (ajustado para dejar espacio al panel de status)
+-- Panel principal - MÁS PEQUEÑO
 local mainPanel = Instance.new("Frame")
 mainPanel.Name = "MainPanel"
-mainPanel.Size = UDim2.new(0, 450, 0, 480)
-mainPanel.Position = UDim2.new(0.5, -100, 0.5, -240) -- Movido un poco a la derecha
+mainPanel.Size = UDim2.new(0, 380, 0, 400)
+mainPanel.Position = UDim2.new(0.5, -190, 0.5, -200)
 mainPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 mainPanel.BackgroundTransparency = 0.82
 mainPanel.BorderSizePixel = 0
 mainPanel.Parent = screenGui
 
--- Constraint para escalado automático
-local aspectRatio = Instance.new("UIAspectRatioConstraint")
-aspectRatio.AspectRatio = 450/480
-aspectRatio.Parent = mainPanel
-
--- Hacer el panel responsive
-local sizeConstraint = Instance.new("UISizeConstraint")
-sizeConstraint.MinSize = Vector2.new(300, 320)
-sizeConstraint.MaxSize = Vector2.new(600, 640)
-sizeConstraint.Parent = mainPanel
-
--- Corner radius para el panel
 local panelCorner = Instance.new("UICorner")
 panelCorner.CornerRadius = UDim.new(0, 25)
 panelCorner.Parent = mainPanel
 
--- Borde brillante del panel con múltiples efectos
 local panelStroke = Instance.new("UIStroke")
 panelStroke.Color = Color3.fromRGB(255, 105, 180)
 panelStroke.Thickness = 3
 panelStroke.Transparency = 0.6
 panelStroke.Parent = mainPanel
 
--- Gradiente en el borde
-local strokeGradient = Instance.new("UIGradient")
-strokeGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 20, 147)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 105, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(218, 112, 214))
-}
-strokeGradient.Parent = panelStroke
-
--- Efectos de brillo en el borde
-local strokeTween = TweenService:Create(panelStroke, 
-    TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-    {Transparency = 0.1, Thickness = 5}
-)
-strokeTween:Play()
-
--- Decoración sakura en el panel
-local panelSakura = Instance.new("TextLabel")
-panelSakura.Size = UDim2.new(0, 50, 0, 50)
-panelSakura.Position = UDim2.new(1, -60, 0, -15)
-panelSakura.BackgroundTransparency = 1
-panelSakura.Text = "🌸"
-panelSakura.TextScaled = true
-panelSakura.Font = Enum.Font.Gotham
-panelSakura.Parent = mainPanel
-
--- Animación de la decoración del panel
-local panelSakuraTween = TweenService:Create(panelSakura,
-    TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-    {Rotation = 15, Position = UDim2.new(1, -60, 0, -25)}
-)
-panelSakuraTween:Play()
-
--- Título
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "Title"
 titleLabel.Size = UDim2.new(1, -40, 0, 60)
@@ -372,25 +514,6 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = mainPanel
 
--- Gradiente animado del título
-local titleGradient = Instance.new("UIGradient")
-titleGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 20, 147)),
-    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 105, 180)),
-    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(218, 112, 214)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(138, 43, 226))
-}
-titleGradient.Rotation = 45
-titleGradient.Parent = titleLabel
-
--- Animar gradiente del título
-local titleGradientTween = TweenService:Create(titleGradient,
-    TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
-    {Rotation = 405}
-)
-titleGradientTween:Play()
-
--- Subtítulo
 local subtitleLabel = Instance.new("TextLabel")
 subtitleLabel.Name = "Subtitle"
 subtitleLabel.Size = UDim2.new(1, -40, 0, 30)
@@ -402,7 +525,6 @@ subtitleLabel.TextScaled = true
 subtitleLabel.Font = Enum.Font.GothamMedium
 subtitleLabel.Parent = mainPanel
 
--- Botón Get Key
 local getKeyButton = Instance.new("TextButton")
 getKeyButton.Name = "GetKeyButton"
 getKeyButton.Size = UDim2.new(1, -40, 0, 45)
@@ -415,22 +537,10 @@ getKeyButton.TextScaled = true
 getKeyButton.Font = Enum.Font.GothamBold
 getKeyButton.Parent = mainPanel
 
--- Corner radius para el botón Get Key
 local getKeyCorner = Instance.new("UICorner")
 getKeyCorner.CornerRadius = UDim.new(0, 12)
 getKeyCorner.Parent = getKeyButton
 
--- Gradiente del botón Get Key
-local getKeyGradient = Instance.new("UIGradient")
-getKeyGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(186, 85, 211)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(147, 112, 219))
-}
-getKeyGradient.Rotation = 45
-getKeyGradient.Parent = getKeyButton
-
--- Label del input
 local inputLabel = Instance.new("TextLabel")
 inputLabel.Name = "InputLabel"
 inputLabel.Size = UDim2.new(1, -40, 0, 25)
@@ -443,7 +553,6 @@ inputLabel.Font = Enum.Font.GothamMedium
 inputLabel.TextXAlignment = Enum.TextXAlignment.Left
 inputLabel.Parent = mainPanel
 
--- Input de la clave
 local keyInput = Instance.new("TextBox")
 keyInput.Name = "KeyInput"
 keyInput.Size = UDim2.new(1, -40, 0, 50)
@@ -459,25 +568,21 @@ keyInput.TextScaled = true
 keyInput.Font = Enum.Font.Gotham
 keyInput.Parent = mainPanel
 
--- Corner radius para el input
 local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0, 15)
 inputCorner.Parent = keyInput
 
--- Padding del input
 local inputPadding = Instance.new("UIPadding")
 inputPadding.PaddingLeft = UDim.new(0, 15)
 inputPadding.PaddingRight = UDim.new(0, 15)
 inputPadding.Parent = keyInput
 
--- Borde del input
 local inputStroke = Instance.new("UIStroke")
 inputStroke.Color = Color3.fromRGB(255, 182, 193)
 inputStroke.Thickness = 2
 inputStroke.Transparency = 0.7
 inputStroke.Parent = keyInput
 
--- Botón Submit
 local submitButton = Instance.new("TextButton")
 submitButton.Name = "SubmitButton"
 submitButton.Size = UDim2.new(1, -40, 0, 55)
@@ -490,12 +595,10 @@ submitButton.TextScaled = true
 submitButton.Font = Enum.Font.GothamBold
 submitButton.Parent = mainPanel
 
--- Corner radius para el botón
 local buttonCorner = Instance.new("UICorner")
 buttonCorner.CornerRadius = UDim.new(0, 15)
 buttonCorner.Parent = submitButton
 
--- Gradiente del botón
 local buttonGradient = Instance.new("UIGradient")
 buttonGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 20, 147)),
@@ -564,7 +667,7 @@ successLabel.TextScaled = true
 successLabel.Font = Enum.Font.GothamBold
 successLabel.Parent = successMessage
 
--- Función para crear pétalos de sakura más detallados
+-- Función para crear pétalos de sakura
 local function createSakuraPetal()
     local petal = Instance.new("Frame")
     petal.Name = "SakuraPetal"
@@ -575,25 +678,18 @@ local function createSakuraPetal()
     petal.Rotation = math.random(0, 360)
     petal.Parent = sakuraContainer
     
-    -- Corner para hacer el pétalo con forma especial
     local petalCorner = Instance.new("UICorner")
     petalCorner.CornerRadius = UDim.new(0, math.random(3, 8))
     petalCorner.Parent = petal
     
-    -- Colores aleatorios más variados para los pétalos
     local colors = {
-        Color3.fromRGB(255, 179, 217), -- Rosa sakura clásico
-        Color3.fromRGB(255, 192, 203), -- Rosa claro
-        Color3.fromRGB(255, 182, 193), -- Rosa medio
-        Color3.fromRGB(221, 160, 221), -- Lavanda
-        Color3.fromRGB(240, 230, 140), -- Amarillo suave
-        Color3.fromRGB(255, 218, 185), -- Durazno
-        Color3.fromRGB(230, 230, 250), -- Lavanda muy claro
-        Color3.fromRGB(255, 240, 245)  -- Blanco rosado
+        Color3.fromRGB(255, 179, 217), Color3.fromRGB(255, 192, 203),
+        Color3.fromRGB(255, 182, 193), Color3.fromRGB(221, 160, 221),
+        Color3.fromRGB(240, 230, 140), Color3.fromRGB(255, 218, 185),
+        Color3.fromRGB(230, 230, 250), Color3.fromRGB(255, 240, 245)
     }
     petal.BackgroundColor3 = colors[math.random(1, #colors)]
     
-    -- Gradiente aleatorio en algunos pétalos
     if math.random() > 0.5 then
         local petalGradient = Instance.new("UIGradient")
         petalGradient.Color = ColorSequence.new{
@@ -604,7 +700,6 @@ local function createSakuraPetal()
         petalGradient.Parent = petal
     end
     
-    -- Animación de caída con rotación y movimiento lateral
     local fallTime = math.random(8, 15)
     local fallTween = TweenService:Create(petal,
         TweenInfo.new(fallTime, Enum.EasingStyle.Linear),
@@ -615,7 +710,6 @@ local function createSakuraPetal()
         }
     )
     
-    -- Movimiento lateral durante la caída
     local swayTween = TweenService:Create(petal,
         TweenInfo.new(math.random(2, 4), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, math.floor(fallTime/3), true),
         {Position = UDim2.new(petal.Position.X.Scale + math.random(-10, 10)/100, 0, petal.Position.Y.Scale, 0)}
@@ -624,15 +718,13 @@ local function createSakuraPetal()
     fallTween:Play()
     swayTween:Play()
     
-    -- Eliminar pétalo después de la animación
     fallTween.Completed:Connect(function()
         petal:Destroy()
     end)
 end
 
--- Función para crear efectos especiales mejorados
+-- Función para crear efectos especiales
 local function createSpecialEffect()
-    -- Crear explosión de pétalos
     for i = 1, 35 do
         task.spawn(function()
             task.wait(i * 0.03)
@@ -640,7 +732,6 @@ local function createSpecialEffect()
         end)
     end
     
-    -- Efecto de brillo en el fondo
     local brightTween = TweenService:Create(backgroundGradient,
         TweenInfo.new(0.8, Enum.EasingStyle.Sine),
         {Transparency = 0.3}
@@ -656,22 +747,10 @@ local function createSpecialEffect()
     end)
 end
 
--- Animación flotante del panel
-local function animatePanel()
-    local floatTween = TweenService:Create(mainPanel,
-        TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {
-            Position = UDim2.new(0.5, -225, 0.5, -250),
-            Rotation = math.random(-2, 2)
-        }
-    )
-    floatTween:Play()
-end
-
--- Generar pétalos continuamente con mayor frecuencia
+-- Generar pétalos continuamente
 local petalConnection
 petalConnection = RunService.Heartbeat:Connect(function()
-    if math.random() > 0.94 then -- Mayor frecuencia de pétalos
+    if math.random() > 0.94 then
         createSakuraPetal()
     end
 end)
@@ -680,10 +759,7 @@ end)
 getKeyButton.MouseEnter:Connect(function()
     local hoverTween = TweenService:Create(getKeyButton,
         TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {
-            Size = UDim2.new(1, -30, 0, 50),
-            BackgroundColor3 = Color3.fromRGB(128, 0, 128)
-        }
+        {Size = UDim2.new(1, -30, 0, 50), BackgroundColor3 = Color3.fromRGB(128, 0, 128)}
     )
     hoverTween:Play()
 end)
@@ -691,20 +767,15 @@ end)
 getKeyButton.MouseLeave:Connect(function()
     local leaveTween = TweenService:Create(getKeyButton,
         TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {
-            Size = UDim2.new(1, -40, 0, 45),
-            BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-        }
+        {Size = UDim2.new(1, -40, 0, 45), BackgroundColor3 = Color3.fromRGB(138, 43, 226)}
     )
     leaveTween:Play()
 end)
 
 -- Función del botón Get Key
 getKeyButton.MouseButton1Click:Connect(function()
-    -- Copiar enlace al portapapeles
     setclipboard("https://zamasxmodder.github.io/SakurasCriptTRAIL/")
     
-    -- Efecto de click
     local clickTween = TweenService:Create(getKeyButton,
         TweenInfo.new(0.1, Enum.EasingStyle.Back),
         {Size = UDim2.new(1, -50, 0, 40)}
@@ -719,7 +790,6 @@ getKeyButton.MouseButton1Click:Connect(function()
         releaseTween:Play()
     end)
     
-    -- Mostrar toast
     getKeyToast.Visible = true
     getKeyToast.Position = UDim2.new(0.5, -200, 0, -100)
     
@@ -729,13 +799,11 @@ getKeyButton.MouseButton1Click:Connect(function()
     )
     showToastTween:Play()
     
-    -- Crear algunos pétalos especiales
     for i = 1, 8 do
         task.wait(0.1)
         createSakuraPetal()
     end
     
-    -- Ocultar toast después de 4 segundos
     task.wait(4)
     local hideToastTween = TweenService:Create(getKeyToast,
         TweenInfo.new(0.5, Enum.EasingStyle.Back),
@@ -775,7 +843,6 @@ keyInput.FocusLost:Connect(function()
     strokeTween:Play()
 end)
 
--- Crear pétalos al escribir
 keyInput:GetPropertyChangedSignal("Text"):Connect(function()
     if #keyInput.Text > 0 and math.random() > 0.6 then
         createSakuraPetal()
@@ -786,10 +853,7 @@ end)
 submitButton.MouseEnter:Connect(function()
     local hoverTween = TweenService:Create(submitButton,
         TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {
-            Size = UDim2.new(1, -30, 0, 60),
-            BackgroundColor3 = Color3.fromRGB(255, 0, 128)
-        }
+        {Size = UDim2.new(1, -30, 0, 60), BackgroundColor3 = Color3.fromRGB(255, 0, 128)}
     )
     hoverTween:Play()
 end)
@@ -797,20 +861,16 @@ end)
 submitButton.MouseLeave:Connect(function()
     local leaveTween = TweenService:Create(submitButton,
         TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {
-            Size = UDim2.new(1, -40, 0, 55),
-            BackgroundColor3 = Color3.fromRGB(255, 20, 147)
-        }
+        {Size = UDim2.new(1, -40, 0, 55), BackgroundColor3 = Color3.fromRGB(255, 20, 147)}
     )
     leaveTween:Play()
 end)
 
 -- Función del botón submit
 submitButton.MouseButton1Click:Connect(function()
-    local key = keyInput.Text:match("^%s*(.-)%s*$") -- Trim whitespace
+    local key = keyInput.Text:match("^%s*(.-)%s*$")
     
     if key and key ~= "" then
-        -- Efecto de click
         local clickTween = TweenService:Create(submitButton,
             TweenInfo.new(0.1, Enum.EasingStyle.Back),
             {Size = UDim2.new(1, -50, 0, 50)}
@@ -825,10 +885,8 @@ submitButton.MouseButton1Click:Connect(function()
             releaseTween:Play()
         end)
         
-        -- Crear efecto especial
         createSpecialEffect()
         
-        -- Mostrar mensaje de éxito
         successMessage.Visible = true
         successMessage.Size = UDim2.new(0, 0, 0, 0)
         
@@ -838,12 +896,10 @@ submitButton.MouseButton1Click:Connect(function()
         )
         showTween:Play()
         
-        -- Limpiar input
         task.wait(0.3)
         keyInput.Text = ""
         keyInput.PlaceholderText = '"' .. key .. '" - Key registered! ✨'
         
-        -- Ocultar mensaje después de 3 segundos
         task.wait(3)
         local hideTween = TweenService:Create(successMessage,
             TweenInfo.new(0.5, Enum.EasingStyle.Back),
@@ -856,66 +912,52 @@ submitButton.MouseButton1Click:Connect(function()
             keyInput.PlaceholderText = "put your key here..."
         end)
         
-        -- Log de la clave (puedes cambiar esto por tu lógica)
         print("🌸 Key submitted:", key)
-        
-        -- Aquí puedes agregar tu lógica para manejar la clave
-        -- Por ejemplo: enviar a un webhook, validar, etc.
     end
 end)
 
--- Hacer el panel responsive para diferentes tamaños de pantalla
-local function updatePanelSize()
+-- Animación flotante de paneles
+local function animatePanels()
     local screenSize = workspace.CurrentCamera.ViewportSize
-    local scale = math.min(screenSize.X / 1920, screenSize.Y / 1080)
-    scale = math.clamp(scale, 0.5, 1.2)
+    local isMobile = screenSize.X < 800
     
-    -- Panel principal
-    mainPanel.Size = UDim2.new(0, 450 * scale, 0, 480 * scale)
-    mainPanel.Position = UDim2.new(0.5, -100 * scale, 0.5, -240 * scale)
-    
-    -- Panel de status
-    statusPanel.Size = UDim2.new(0, 280 * scale, 0, 420 * scale)
-    statusPanel.Position = UDim2.new(0, 30 * scale, 0.5, -210 * scale)
+    if not isMobile then
+        -- Solo animar en PC/Tablet
+        local mainTween = TweenService:Create(mainPanel,
+            TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+            {Position = UDim2.new(0.5, -190, 0.5, -210), Rotation = math.random(-1, 1)}
+        )
+        mainTween:Play()
+        
+        local statusTween = TweenService:Create(statusPanel,
+            TweenInfo.new(8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+            {Position = UDim2.new(0, 20, 0.5, -185), Rotation = math.random(-1, 1)}
+        )
+        statusTween:Play()
+        
+        local infoTween = TweenService:Create(playerInfoPanel,
+            TweenInfo.new(7.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+            {Position = UDim2.new(1, -260, 0.5, -210), Rotation = math.random(-1, 1)}
+        )
+        infoTween:Play()
+    end
 end
 
--- Conectar el redimensionamiento
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updatePanelSize)
-updatePanelSize() -- Aplicar al inicio
-
 -- Iniciar animaciones
-animatePanel()
-
--- Actualizar lista de jugadores al inicio
+animatePanels()
 updatePlayersList()
 
--- Actualizar lista cada 5 minutos (300 segundos)
-local statusUpdateConnection
-statusUpdateConnection = task.spawn(function()
+-- Actualizar lista cada 5 minutos
+task.spawn(function()
     while screenGui.Parent do
-        task.wait(300) -- 5 minutos
+        task.wait(300)
         if screenGui.Parent then
             updatePlayersList()
         end
     end
 end)
 
--- Animación flotante del panel de status
-local function animateStatusPanel()
-    local floatTween = TweenService:Create(statusPanel,
-        TweenInfo.new(8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {
-            Position = UDim2.new(0, 30, 0.5, -220),
-            Rotation = math.random(-1, 1)
-        }
-    )
-    floatTween:Play()
-end
-
--- Iniciar animación del panel de status
-animateStatusPanel()
-
--- Crear pétalos iniciales más densos
+-- Crear pétalos iniciales
 for i = 1, 25 do
     task.spawn(function()
         task.wait(i * 0.15)
@@ -923,82 +965,19 @@ for i = 1, 25 do
     end)
 end
 
--- Función para limpiar la GUI (opcional)
-local function cleanup()
-    if petalConnection then
-        petalConnection:Disconnect()
-    end
-    if statusUpdateConnection then
-        task.cancel(statusUpdateConnection)
-    end
-    screenGui:Destroy()
-end
-
--- Función para alternar visibilidad de la GUI
-local function toggleGUI()
-    screenGui.Enabled = not screenGui.Enabled
-end
-
--- Detectar tecla para ocultar/mostrar (opcional - Tecla F)
+-- Función para alternar visibilidad (Tecla F)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
-        toggleGUI()
+        screenGui.Enabled = not screenGui.Enabled
     end
-end)
-
--- Sistema de partículas sakura adicional para momentos especiales
-local function createSakuraExplosion(centerPosition)
-    for i = 1, 50 do
-        task.spawn(function()
-            local petal = Instance.new("Frame")
-            petal.Name = "ExplosionPetal"
-            petal.Size = UDim2.new(0, math.random(6, 14), 0, math.random(6, 14))
-            petal.Position = centerPosition
-            petal.BackgroundColor3 = Color3.fromRGB(255, 192, 203)
-            petal.BorderSizePixel = 0
-            petal.Parent = sakuraContainer
-            
-            local petalCorner = Instance.new("UICorner")
-            petalCorner.CornerRadius = UDim.new(0.5, 0)
-            petalCorner.Parent = petal
-            
-            -- Movimiento radial desde el centro
-            local angle = math.rad(i * (360 / 50))
-            local distance = math.random(100, 300)
-            local targetX = centerPosition.X.Scale + (math.cos(angle) * distance / workspace.CurrentCamera.ViewportSize.X)
-            local targetY = centerPosition.Y.Scale + (math.sin(angle) * distance / workspace.CurrentCamera.ViewportSize.Y)
-            
-            local explosionTween = TweenService:Create(petal,
-                TweenInfo.new(math.random(2, 4), Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    Position = UDim2.new(targetX, 0, targetY, 0),
-                    Rotation = math.random(0, 720),
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(0, 4, 0, 4)
-                }
-            )
-            explosionTween:Play()
-            
-            explosionTween.Completed:Connect(function()
-                petal:Destroy()
-            end)
-        end)
-    end
-end
-
--- Efecto especial al hacer hover sobre el título
-titleLabel.MouseEnter:Connect(function()
-    createSakuraExplosion(UDim2.new(0.5, 0, 0.2, 0))
 end)
 
 -- Retornar tabla con funciones útiles
 return {
     GUI = screenGui,
-    Cleanup = cleanup,
+    HasAccess = hasAccess,
+    AccountAge = accountAge,
     CreatePetal = createSakuraPetal,
     SpecialEffect = createSpecialEffect,
-    ToggleGUI = toggleGUI,
-    SakuraExplosion = createSakuraExplosion,
-    UpdatePlayersList = updatePlayersList,
-    StatusPanel = statusPanel
+    UpdatePlayersList = updatePlayersList
 }
