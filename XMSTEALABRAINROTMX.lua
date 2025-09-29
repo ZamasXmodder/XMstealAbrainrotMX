@@ -27,13 +27,13 @@ local function getScreenType()
     local screenSize = workspace.CurrentCamera.ViewportSize
     local screenX = screenSize.X
     
-    -- Detección más precisa
+    -- Detección más precisa con escalas más pequeñas
     if screenX <= 500 then
-        return "Mobile", 0.7  -- Factor de escala
+        return "Mobile", 0.50  -- Factor de escala aún más pequeño
     elseif screenX <= 850 then
-        return "Tablet", 0.85
+        return "Tablet", 0.70
     else
-        return "Desktop", 1.0
+        return "Desktop", 0.85
     end
 end
 
@@ -181,14 +181,16 @@ local allUsernames = {
 -- PANELES RESPONSIVE CON ESCALA DINÁMICA
 local screenType, scaleFactor = getScreenType()
 
--- Tamaños base (para Desktop)
-local baseStatusSize = {width = 250, height = 380}
-local baseInfoSize = {width = 270, height = 440}
-local baseMainSize = {width = 400, height = 450}
+-- Tamaños base aún más compactos (para Desktop)
+-- Panel de usuarios usa escala diferente para mantener legibilidad
+local statusScaleFactor = math.max(scaleFactor, 0.65)  -- Mínimo 65% para legibilidad
+local baseStatusSize = {width = 200, height = 320}
+local baseInfoSize = {width = 220, height = 380}
+local baseMainSize = {width = 340, height = 390}
 
--- Aplicar factor de escala
-local statusPanelSize = UDim2.new(0, baseStatusSize.width * scaleFactor, 0, baseStatusSize.height * scaleFactor)
-local statusPanelPos = UDim2.new(0, 15, 0.5, -(baseStatusSize.height * scaleFactor) / 2)
+-- Aplicar factor de escala (usuarios con escala mínima)
+local statusPanelSize = UDim2.new(0, baseStatusSize.width * statusScaleFactor, 0, baseStatusSize.height * statusScaleFactor)
+local statusPanelPos = UDim2.new(0, 15, 0.5, -(baseStatusSize.height * statusScaleFactor) / 2)
 
 local statusPanel = Instance.new("Frame")
 statusPanel.Name = "StatusPanel"
@@ -233,7 +235,7 @@ playersScrollFrame.Parent = statusPanel
 
 local playersLayout = Instance.new("UIListLayout")
 playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
-playersLayout.Padding = UDim.new(0, 10)
+playersLayout.Padding = UDim.new(0, math.max(6, math.floor(10 * scaleFactor)))
 playersLayout.Parent = playersScrollFrame
 
 -- PANEL DE INFORMACIÓN DEL JUGADOR (lado derecho) - ESCALADO
@@ -308,7 +310,7 @@ infoContainer.Parent = playerInfoPanel
 
 local infoLayout = Instance.new("UIListLayout")
 infoLayout.SortOrder = Enum.SortOrder.LayoutOrder
-infoLayout.Padding = UDim.new(0, 8)
+infoLayout.Padding = UDim.new(0, math.max(5, math.floor(8 * scaleFactor)))
 infoLayout.Parent = infoContainer
 
 -- Función para crear info item con tamaños escalados
@@ -406,11 +408,13 @@ statusText.TextScaled = true
 statusText.Font = Enum.Font.GothamBold
 statusText.Parent = statusItem
 
--- Función para crear un elemento de jugador
+-- Función para crear un elemento de jugador con tamaño mínimo
 local function createPlayerElement(username, isOnline)
+    local itemHeight = math.max(35, math.floor(40 * statusScaleFactor))  -- Altura mínima 35px
+    
     local playerFrame = Instance.new("Frame")
     playerFrame.Name = username
-    playerFrame.Size = UDim2.new(1, -15, 0, 40)
+    playerFrame.Size = UDim2.new(1, -15, 0, itemHeight)
     playerFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     playerFrame.BackgroundTransparency = 0.9
     playerFrame.BorderSizePixel = 0
@@ -420,10 +424,11 @@ local function createPlayerElement(username, isOnline)
     playerCorner.CornerRadius = UDim.new(0, 10)
     playerCorner.Parent = playerFrame
     
+    local indicatorSize = math.max(12, math.floor(14 * statusScaleFactor))
     local statusIndicator = Instance.new("Frame")
     statusIndicator.Name = "StatusIndicator"
-    statusIndicator.Size = UDim2.new(0, 14, 0, 14)
-    statusIndicator.Position = UDim2.new(0, 12, 0.5, -7)
+    statusIndicator.Size = UDim2.new(0, indicatorSize, 0, indicatorSize)
+    statusIndicator.Position = UDim2.new(0, 10, 0.5, -indicatorSize/2)
     statusIndicator.BackgroundColor3 = isOnline and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
     statusIndicator.BorderSizePixel = 0
     statusIndicator.Parent = playerFrame
@@ -442,8 +447,8 @@ local function createPlayerElement(username, isOnline)
     
     local usernameLabel = Instance.new("TextLabel")
     usernameLabel.Name = "UsernameLabel"
-    usernameLabel.Size = UDim2.new(1, -90, 1, 0)
-    usernameLabel.Position = UDim2.new(0, 34, 0, 0)
+    usernameLabel.Size = UDim2.new(1, -80, 1, 0)
+    usernameLabel.Position = UDim2.new(0, 30, 0, 0)
     usernameLabel.BackgroundTransparency = 1
     usernameLabel.Text = username
     usernameLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
@@ -452,10 +457,11 @@ local function createPlayerElement(username, isOnline)
     usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
     usernameLabel.Parent = playerFrame
     
+    local statusWidth = math.max(45, math.floor(55 * statusScaleFactor))
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
-    statusLabel.Size = UDim2.new(0, 55, 1, 0)
-    statusLabel.Position = UDim2.new(1, -60, 0, 0)
+    statusLabel.Size = UDim2.new(0, statusWidth, 1, 0)
+    statusLabel.Position = UDim2.new(1, -(statusWidth + 5), 0, 0)
     statusLabel.BackgroundTransparency = 1
     statusLabel.Text = isOnline and "Online" or "Offline"
     statusLabel.TextColor3 = isOnline and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
@@ -464,12 +470,12 @@ local function createPlayerElement(username, isOnline)
     statusLabel.TextXAlignment = Enum.TextXAlignment.Right
     statusLabel.Parent = playerFrame
     
-    playerFrame.Size = UDim2.new(0, 0, 0, 40)
+    playerFrame.Size = UDim2.new(0, 0, 0, itemHeight)
     playerFrame.BackgroundTransparency = 1
     
     local enterTween = TweenService:Create(playerFrame,
         TweenInfo.new(0.5, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -15, 0, 40), BackgroundTransparency = 0.9}
+        {Size = UDim2.new(1, -15, 0, itemHeight), BackgroundTransparency = 0.9}
     )
     enterTween:Play()
     
