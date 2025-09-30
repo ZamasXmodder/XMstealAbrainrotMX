@@ -1,1023 +1,1037 @@
--- Steal A Brainrot - Enhanced Sakura Panel GUI for Roblox (RESPONSIVE)
--- Este script debe ir en StarterPlayerScripts o ejecutarse con loadstring
+-- Matrix Japanese Theme Login Panel - Fixed Edition
+-- By Zamas 2025 - Performance & Visual Improvements
+-- Violence Edition - Steal a Brainrot
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-
+local StarterGui = game:GetService("StarterGui")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Crear ScreenGui principal
+-- Screen size detection for responsive design
+local camera = workspace.CurrentCamera
+local screenSize = camera.ViewportSize
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+-- Create ScreenGui with TopBar coverage
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SakuraBrainrotPanel"
+screenGui.Name = "MatrixLoginPanel"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.IgnoreGuiInset = true
+screenGui.IgnoreGuiInset = true -- This covers the TopBar
+screenGui.DisplayOrder = 10 -- Ensure it's on top
 screenGui.Parent = playerGui
 
--- VERIFICACIÓN DE CUENTA (Mínimo 5 días)
-local accountAge = player.AccountAge
-local minimumDays = 5
-local hasAccess = accountAge >= minimumDays
+-- Background Overlay Effect (Full screen including TopBar)
+local bgOverlay = Instance.new("Frame")
+bgOverlay.Name = "BackgroundOverlay"
+bgOverlay.Size = UDim2.new(1, 0, 1, 0)
+bgOverlay.Position = UDim2.new(0, 0, 0, 0)
+bgOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+bgOverlay.BackgroundTransparency = 0.3
+bgOverlay.Parent = screenGui
+bgOverlay.ZIndex = 0
 
--- Función para detectar tipo de pantalla y ajustar dinámicamente
-local function getScreenType()
-    local screenSize = workspace.CurrentCamera.ViewportSize
-    local screenX = screenSize.X
-    
-    -- Detección más precisa con escalas más pequeñas
-    if screenX <= 500 then
-        return "Mobile", 0.50  -- Factor de escala aún más pequeño
-    elseif screenX <= 850 then
-        return "Tablet", 0.70
-    else
-        return "Desktop", 0.85
-    end
-end
+-- Matrix Grid Background
+local matrixGrid = Instance.new("Frame")
+matrixGrid.Name = "MatrixGrid"
+matrixGrid.Size = UDim2.new(1, 0, 1, 0)
+matrixGrid.BackgroundTransparency = 1
+matrixGrid.Parent = screenGui
+matrixGrid.ZIndex = 1
 
--- Frame de fondo completo
-local backgroundFrame = Instance.new("Frame")
-backgroundFrame.Name = "Background"
-backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
-backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
-backgroundFrame.BackgroundColor3 = Color3.fromRGB(255, 238, 248)
-backgroundFrame.BorderSizePixel = 0
-backgroundFrame.Parent = screenGui
-
--- Gradiente de fondo animado
-local backgroundGradient = Instance.new("UIGradient")
-backgroundGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 238, 248)),
-    ColorSequenceKeypoint.new(0.2, Color3.fromRGB(248, 215, 218)),
-    ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 179, 217)),
-    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(230, 179, 255)),
-    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(212, 197, 249)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 240, 255))
-}
-backgroundGradient.Rotation = 135
-backgroundGradient.Parent = backgroundFrame
-
--- Animar rotación del gradiente
-local gradientTween = TweenService:Create(backgroundGradient,
-    TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
-    {Rotation = 495}
-)
-gradientTween:Play()
-
--- Container para pétalos
-local sakuraContainer = Instance.new("Frame")
-sakuraContainer.Name = "SakuraContainer"
-sakuraContainer.Size = UDim2.new(1, 0, 1, 0)
-sakuraContainer.Position = UDim2.new(0, 0, 0, 0)
-sakuraContainer.BackgroundTransparency = 1
-sakuraContainer.ClipsDescendants = false
-sakuraContainer.Parent = backgroundFrame
-
--- Decoraciones sakura flotantes
-local function createFloatingSakura(position, emoji)
-    local sakura = Instance.new("TextLabel")
-    sakura.Size = UDim2.new(0, 40, 0, 40)
-    sakura.Position = position
-    sakura.BackgroundTransparency = 1
-    sakura.Text = emoji
-    sakura.TextScaled = true
-    sakura.Font = Enum.Font.Gotham
-    sakura.Parent = backgroundFrame
-    
-    local floatTween = TweenService:Create(sakura,
-        TweenInfo.new(math.random(4, 8), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {
-            Position = UDim2.new(position.X.Scale, position.X.Offset + math.random(-30, 30), 
-                               position.Y.Scale, position.Y.Offset + math.random(-30, 30)),
-            Rotation = math.random(-45, 45)
-        }
-    )
-    floatTween:Play()
-    
-    return sakura
-end
-
-createFloatingSakura(UDim2.new(0.05, 0, 0.1, 0), "🌸")
-createFloatingSakura(UDim2.new(0.9, 0, 0.15, 0), "🌺")
-createFloatingSakura(UDim2.new(0.1, 0, 0.8, 0), "🌸")
-createFloatingSakura(UDim2.new(0.85, 0, 0.75, 0), "🌺")
-createFloatingSakura(UDim2.new(0.15, 0, 0.3, 0), "🌸")
-createFloatingSakura(UDim2.new(0.8, 0, 0.4, 0), "🌺")
-
--- SI NO TIENE ACCESO, MOSTRAR MENSAJE DE DENEGACIÓN
-if not hasAccess then
-    local deniedFrame = Instance.new("Frame")
-    deniedFrame.Name = "AccessDenied"
-    deniedFrame.Size = UDim2.new(0, 500, 0, 300)
-    deniedFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
-    deniedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    deniedFrame.BorderSizePixel = 0
-    deniedFrame.Parent = screenGui
-    
-    local deniedCorner = Instance.new("UICorner")
-    deniedCorner.CornerRadius = UDim.new(0, 25)
-    deniedCorner.Parent = deniedFrame
-    
-    local deniedStroke = Instance.new("UIStroke")
-    deniedStroke.Color = Color3.fromRGB(231, 76, 60)
-    deniedStroke.Thickness = 4
-    deniedStroke.Parent = deniedFrame
-    
-    local warningIcon = Instance.new("TextLabel")
-    warningIcon.Size = UDim2.new(0, 80, 0, 80)
-    warningIcon.Position = UDim2.new(0.5, -40, 0, 30)
-    warningIcon.BackgroundTransparency = 1
-    warningIcon.Text = "⚠️"
-    warningIcon.TextScaled = true
-    warningIcon.Font = Enum.Font.GothamBold
-    warningIcon.Parent = deniedFrame
-    
-    local deniedTitle = Instance.new("TextLabel")
-    deniedTitle.Size = UDim2.new(1, -40, 0, 50)
-    deniedTitle.Position = UDim2.new(0, 20, 0, 120)
-    deniedTitle.BackgroundTransparency = 1
-    deniedTitle.Text = "NO TIENES ACCESO AUTORIZADO"
-    deniedTitle.TextColor3 = Color3.fromRGB(231, 76, 60)
-    deniedTitle.TextScaled = true
-    deniedTitle.Font = Enum.Font.GothamBold
-    deniedTitle.Parent = deniedFrame
-    
-    local deniedSubtext = Instance.new("TextLabel")
-    deniedSubtext.Size = UDim2.new(1, -40, 0, 80)
-    deniedSubtext.Position = UDim2.new(0, 20, 0, 180)
-    deniedSubtext.BackgroundTransparency = 1
-    deniedSubtext.Text = "(ACCOUNT NOT AUTHORIZED)\n\nTu cuenta debe tener al menos " .. minimumDays .. " días.\nActualmente: " .. accountAge .. " días"
-    deniedSubtext.TextColor3 = Color3.fromRGB(200, 200, 200)
-    deniedSubtext.TextScaled = true
-    deniedSubtext.Font = Enum.Font.Gotham
-    deniedSubtext.TextWrapped = true
-    deniedSubtext.Parent = deniedFrame
-    
-    -- Animación de pulso
-    local pulseTween = TweenService:Create(deniedStroke,
-        TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {Thickness = 6, Color = Color3.fromRGB(255, 100, 100)}
-    )
-    pulseTween:Play()
-    
-    return -- Detener la ejecución si no tiene acceso
-end
-
--- Lista completa de nombres de usuarios
-local allUsernames = {
-    "xJuanitoPro123", "SofiGamer_07", "DarkNinjaXD", "MariKawaii22", "ElPanDeAyer_44",
-    "ProMaxiYT", "CamilitaUwU", "Andresito_2009", "FerchoCrack21", "Luisa_Lolita12",
-    "KevinNoob_01", "DaniMasterX", "ValenCute25", "SebasYT_777", "LinaJuegaXD",
-    "Oscarito_09", "MrPapasLocas", "Pau_GirlxX", "xd_TomasGamer", "LauryPink_15",
-    "ElBananero_300", "AngelDark47", "SantiUwUPro", "Chloe_xX_Star", "PablitoXD_22",
-    "DianaCute_14", "GokuFan_999", "XimenaLove09", "CarlitosProXD", "Juana_0707",
-    "Nacho_elCrack", "SofiaLindaa23", "BrianUwU_04", "Andreita_xX", "EpicNoob_302",
-    "ValeGamerzzz", "PipeMaster77", "LauCuteUwU", "Jorgito_108", "MeliGamer_15",
-    "CrackXD_Samu", "FerxxoUwU88", "JuampiElNoob"
-}
-
--- PANELES RESPONSIVE CON ESCALA DINÁMICA
-local screenType, scaleFactor = getScreenType()
-
--- Tamaños base aún más compactos (para Desktop)
--- Panel de usuarios usa escala diferente para mantener legibilidad
-local statusScaleFactor = math.max(scaleFactor, 0.65)  -- Mínimo 65% para legibilidad
-local baseStatusSize = {width = 200, height = 320}
-local baseInfoSize = {width = 220, height = 380}
-local baseMainSize = {width = 340, height = 390}
-
--- Aplicar factor de escala (usuarios con escala mínima)
-local statusPanelSize = UDim2.new(0, baseStatusSize.width * statusScaleFactor, 0, baseStatusSize.height * statusScaleFactor)
-local statusPanelPos = UDim2.new(0, 15, 0.5, -(baseStatusSize.height * statusScaleFactor) / 2)
-
-local statusPanel = Instance.new("Frame")
-statusPanel.Name = "StatusPanel"
-statusPanel.Size = statusPanelSize
-statusPanel.Position = statusPanelPos
-statusPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-statusPanel.BackgroundTransparency = 0.85
-statusPanel.BorderSizePixel = 0
-statusPanel.Parent = screenGui
-
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 20)
-statusCorner.Parent = statusPanel
-
-local statusStroke = Instance.new("UIStroke")
-statusStroke.Color = Color3.fromRGB(186, 85, 211)
-statusStroke.Thickness = 2
-statusStroke.Transparency = 0.6
-statusStroke.Parent = statusPanel
-
-local statusTitle = Instance.new("TextLabel")
-statusTitle.Name = "StatusTitle"
-statusTitle.Size = UDim2.new(1, -30, 0, 45)
-statusTitle.Position = UDim2.new(0, 15, 0, 12)
-statusTitle.BackgroundTransparency = 1
-statusTitle.Text = "ONLINE CLIENTS"
-statusTitle.TextColor3 = Color3.fromRGB(147, 112, 219)
-statusTitle.TextScaled = true
-statusTitle.Font = Enum.Font.GothamBold
-statusTitle.Parent = statusPanel
-
-local playersScrollFrame = Instance.new("ScrollingFrame")
-playersScrollFrame.Name = "PlayersScrollFrame"
-playersScrollFrame.Size = UDim2.new(1, -30, 1, -70)
-playersScrollFrame.Position = UDim2.new(0, 15, 0, 60)
-playersScrollFrame.BackgroundTransparency = 1
-playersScrollFrame.ScrollBarThickness = 5
-playersScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(186, 85, 211)
-playersScrollFrame.ScrollBarImageTransparency = 0.3
-playersScrollFrame.BorderSizePixel = 0
-playersScrollFrame.Parent = statusPanel
-
-local playersLayout = Instance.new("UIListLayout")
-playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
-playersLayout.Padding = UDim.new(0, math.max(6, math.floor(10 * scaleFactor)))
-playersLayout.Parent = playersScrollFrame
-
--- PANEL DE INFORMACIÓN DEL JUGADOR (lado derecho) - ESCALADO
-local playerInfoPanelSize = UDim2.new(0, baseInfoSize.width * scaleFactor, 0, baseInfoSize.height * scaleFactor)
-local playerInfoPanelPos = UDim2.new(1, -(baseInfoSize.width * scaleFactor + 15), 0.5, -(baseInfoSize.height * scaleFactor) / 2)
-
-local playerInfoPanel = Instance.new("Frame")
-playerInfoPanel.Name = "PlayerInfoPanel"
-playerInfoPanel.Size = playerInfoPanelSize
-playerInfoPanel.Position = playerInfoPanelPos
-playerInfoPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-playerInfoPanel.BackgroundTransparency = 0.85
-playerInfoPanel.BorderSizePixel = 0
-playerInfoPanel.Parent = screenGui
-
-local infoCorner = Instance.new("UICorner")
-infoCorner.CornerRadius = UDim.new(0, 20)
-infoCorner.Parent = playerInfoPanel
-
-local infoStroke = Instance.new("UIStroke")
-infoStroke.Color = Color3.fromRGB(186, 85, 211)
-infoStroke.Thickness = 2
-infoStroke.Transparency = 0.6
-infoStroke.Parent = playerInfoPanel
-
--- Título del panel de info
-local infoTitle = Instance.new("TextLabel")
-infoTitle.Size = UDim2.new(1, -30, 0, 40)
-infoTitle.Position = UDim2.new(0, 15, 0, 10)
-infoTitle.BackgroundTransparency = 1
-infoTitle.Text = "YOUR PROFILE"
-infoTitle.TextColor3 = Color3.fromRGB(147, 112, 219)
-infoTitle.TextScaled = true
-infoTitle.Font = Enum.Font.GothamBold
-infoTitle.Parent = playerInfoPanel
-
--- Headshot del jugador con tamaño escalado
-local headshotSize = math.floor(95 * scaleFactor)
-local headshotFrame = Instance.new("Frame")
-headshotFrame.Size = UDim2.new(0, headshotSize, 0, headshotSize)
-headshotFrame.Position = UDim2.new(0.5, -headshotSize/2, 0, 50)
-headshotFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-headshotFrame.BorderSizePixel = 0
-headshotFrame.Parent = playerInfoPanel
-
-local headshotCorner = Instance.new("UICorner")
-headshotCorner.CornerRadius = UDim.new(1, 0)
-headshotCorner.Parent = headshotFrame
-
-local headshotStroke = Instance.new("UIStroke")
-headshotStroke.Color = Color3.fromRGB(255, 105, 180)
-headshotStroke.Thickness = 3
-headshotStroke.Parent = headshotFrame
-
-local headshot = Instance.new("ImageLabel")
-headshot.Size = UDim2.new(1, -10, 1, -10)
-headshot.Position = UDim2.new(0, 5, 0, 5)
-headshot.BackgroundTransparency = 1
-headshot.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-headshot.Parent = headshotFrame
-
-local headshotImgCorner = Instance.new("UICorner")
-headshotImgCorner.CornerRadius = UDim.new(1, 0)
-headshotImgCorner.Parent = headshot
-
--- Container de información con altura dinámica
-local infoContainer = Instance.new("Frame")
-infoContainer.Size = UDim2.new(1, -30, 0, math.floor(260 * scaleFactor))
-infoContainer.Position = UDim2.new(0, 15, 0, headshotSize + 60)
-infoContainer.BackgroundTransparency = 1
-infoContainer.Parent = playerInfoPanel
-
-local infoLayout = Instance.new("UIListLayout")
-infoLayout.SortOrder = Enum.SortOrder.LayoutOrder
-infoLayout.Padding = UDim.new(0, math.max(5, math.floor(8 * scaleFactor)))
-infoLayout.Parent = infoContainer
-
--- Función para crear info item con tamaños escalados
-local function createInfoItem(title, value, icon)
-    local itemHeight = math.floor(38 * scaleFactor)
-    
-    local itemFrame = Instance.new("Frame")
-    itemFrame.Size = UDim2.new(1, 0, 0, itemHeight)
-    itemFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    itemFrame.BackgroundTransparency = 0.9
-    itemFrame.BorderSizePixel = 0
-    itemFrame.Parent = infoContainer
-    
-    local itemCorner = Instance.new("UICorner")
-    itemCorner.CornerRadius = UDim.new(0, 10)
-    itemCorner.Parent = itemFrame
-    
-    local iconSize = math.floor(24 * scaleFactor)
-    local iconLabel = Instance.new("TextLabel")
-    iconLabel.Size = UDim2.new(0, iconSize, 0, iconSize)
-    iconLabel.Position = UDim2.new(0, 8, 0.5, -iconSize/2)
-    iconLabel.BackgroundTransparency = 1
-    iconLabel.Text = icon
-    iconLabel.TextScaled = true
-    iconLabel.Font = Enum.Font.Gotham
-    iconLabel.Parent = itemFrame
-    
-    local titleWidth = math.floor(60 * scaleFactor)
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(0, titleWidth, 1, 0)
-    titleLabel.Position = UDim2.new(0, iconSize + 12, 0, 0)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
-    titleLabel.TextScaled = true
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = itemFrame
-    
-    local valueLabel = Instance.new("TextLabel")
-    valueLabel.Size = UDim2.new(1, -(iconSize + titleWidth + 25), 1, 0)
-    valueLabel.Position = UDim2.new(0, iconSize + titleWidth + 15, 0, 0)
-    valueLabel.BackgroundTransparency = 1
-    valueLabel.Text = value
-    valueLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
-    valueLabel.TextScaled = true
-    valueLabel.Font = Enum.Font.Gotham
-    valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-    valueLabel.TextWrapped = true
-    valueLabel.Parent = itemFrame
-    
-    return itemFrame
-end
-
--- Obtener país simulado
-local countries = {"Colombia", "Mexico", "Spain", "Argentina", "USA", "Brazil", "Chile", "Peru"}
-local playerCountry = countries[math.random(1, #countries)]
-
--- Crear items de información
-createInfoItem("Username:", player.Name, "👤")
-createInfoItem("Display:", player.DisplayName, "✨")
-createInfoItem("User ID:", tostring(player.UserId), "🆔")
-createInfoItem("Account:", accountAge .. " days old", "📅")
-createInfoItem("Country:", playerCountry, "🌍")
-
--- Status del jugador con altura escalada
-local statusItem = Instance.new("Frame")
-statusItem.Size = UDim2.new(1, 0, 0, math.floor(40 * scaleFactor))
-statusItem.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-statusItem.BackgroundTransparency = 0.3
-statusItem.BorderSizePixel = 0
-statusItem.Parent = infoContainer
-
-local statusItemCorner = Instance.new("UICorner")
-statusItemCorner.CornerRadius = UDim.new(0, 10)
-statusItemCorner.Parent = statusItem
-
-local statusIconSize = math.floor(24 * scaleFactor)
-local statusIcon = Instance.new("TextLabel")
-statusIcon.Size = UDim2.new(0, statusIconSize, 0, statusIconSize)
-statusIcon.Position = UDim2.new(0, 8, 0.5, -statusIconSize/2)
-statusIcon.BackgroundTransparency = 1
-statusIcon.Text = "✅"
-statusIcon.TextScaled = true
-statusIcon.Font = Enum.Font.Gotham
-statusIcon.Parent = statusItem
-
-local statusText = Instance.new("TextLabel")
-statusText.Size = UDim2.new(1, -50, 1, 0)
-statusText.Position = UDim2.new(0, 42, 0, 0)
-statusText.BackgroundTransparency = 1
-statusText.Text = "ACCESS GRANTED"
-statusText.TextColor3 = Color3.fromRGB(255, 255, 255)
-statusText.TextScaled = true
-statusText.Font = Enum.Font.GothamBold
-statusText.Parent = statusItem
-
--- Función para crear un elemento de jugador con tamaño mínimo
-local function createPlayerElement(username, isOnline)
-    local itemHeight = math.max(35, math.floor(40 * statusScaleFactor))  -- Altura mínima 35px
-    
-    local playerFrame = Instance.new("Frame")
-    playerFrame.Name = username
-    playerFrame.Size = UDim2.new(1, -15, 0, itemHeight)
-    playerFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    playerFrame.BackgroundTransparency = 0.9
-    playerFrame.BorderSizePixel = 0
-    playerFrame.Parent = playersScrollFrame
-    
-    local playerCorner = Instance.new("UICorner")
-    playerCorner.CornerRadius = UDim.new(0, 10)
-    playerCorner.Parent = playerFrame
-    
-    local indicatorSize = math.max(12, math.floor(14 * statusScaleFactor))
-    local statusIndicator = Instance.new("Frame")
-    statusIndicator.Name = "StatusIndicator"
-    statusIndicator.Size = UDim2.new(0, indicatorSize, 0, indicatorSize)
-    statusIndicator.Position = UDim2.new(0, 10, 0.5, -indicatorSize/2)
-    statusIndicator.BackgroundColor3 = isOnline and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
-    statusIndicator.BorderSizePixel = 0
-    statusIndicator.Parent = playerFrame
-    
-    local indicatorCorner = Instance.new("UICorner")
-    indicatorCorner.CornerRadius = UDim.new(0.5, 0)
-    indicatorCorner.Parent = statusIndicator
-    
-    if isOnline then
-        local pulseTween = TweenService:Create(statusIndicator,
-            TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {BackgroundColor3 = Color3.fromRGB(39, 174, 96)}
-        )
-        pulseTween:Play()
-    end
-    
-    local usernameLabel = Instance.new("TextLabel")
-    usernameLabel.Name = "UsernameLabel"
-    usernameLabel.Size = UDim2.new(1, -80, 1, 0)
-    usernameLabel.Position = UDim2.new(0, 30, 0, 0)
-    usernameLabel.BackgroundTransparency = 1
-    usernameLabel.Text = username
-    usernameLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
-    usernameLabel.TextScaled = true
-    usernameLabel.Font = Enum.Font.Gotham
-    usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    usernameLabel.Parent = playerFrame
-    
-    local statusWidth = math.max(45, math.floor(55 * statusScaleFactor))
-    local statusLabel = Instance.new("TextLabel")
-    statusLabel.Name = "StatusLabel"
-    statusLabel.Size = UDim2.new(0, statusWidth, 1, 0)
-    statusLabel.Position = UDim2.new(1, -(statusWidth + 5), 0, 0)
-    statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = isOnline and "Online" or "Offline"
-    statusLabel.TextColor3 = isOnline and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
-    statusLabel.TextScaled = true
-    statusLabel.Font = Enum.Font.GothamMedium
-    statusLabel.TextXAlignment = Enum.TextXAlignment.Right
-    statusLabel.Parent = playerFrame
-    
-    playerFrame.Size = UDim2.new(0, 0, 0, itemHeight)
-    playerFrame.BackgroundTransparency = 1
-    
-    local enterTween = TweenService:Create(playerFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -15, 0, itemHeight), BackgroundTransparency = 0.9}
-    )
-    enterTween:Play()
-    
-    return playerFrame
-end
-
--- Función para actualizar la lista de jugadores
-local function updatePlayersList()
-    for _, child in pairs(playersScrollFrame:GetChildren()) do
-        if child:IsA("Frame") and child.Name ~= "UIListLayout" then
-            local exitTween = TweenService:Create(child,
-                TweenInfo.new(0.3, Enum.EasingStyle.Back),
-                {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}
-            )
-            exitTween:Play()
-            exitTween.Completed:Connect(function()
-                child:Destroy()
-            end)
-        end
-    end
-    
-    task.wait(0.4)
-    
-    local selectedUsers = {}
-    local usedIndices = {}
-    
-    for i = 1, math.min(7, #allUsernames) do
-        local randomIndex
-        repeat
-            randomIndex = math.random(1, #allUsernames)
-        until not usedIndices[randomIndex]
+-- Function to create matrix grid lines
+local function createMatrixGrid()
+    -- Vertical lines
+    for i = 0, 10 do
+        local line = Instance.new("Frame")
+        line.Size = UDim2.new(0, 1, 1, 0)
+        line.Position = UDim2.new(i/10, 0, 0, 0)
+        line.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+        line.BackgroundTransparency = 0.9
+        line.Parent = matrixGrid
         
-        usedIndices[randomIndex] = true
-        selectedUsers[i] = allUsernames[randomIndex]
-    end
-    
-    for i, username in ipairs(selectedUsers) do
-        task.spawn(function()
-            task.wait(i * 0.1)
-            local isOnline = math.random() > 0.3
-            createPlayerElement(username, isOnline)
+        -- Animate opacity
+        spawn(function()
+            while line.Parent do
+                for t = 0.9, 0.7, -0.01 do
+                    line.BackgroundTransparency = t
+                    wait(0.05)
+                end
+                for t = 0.7, 0.9, 0.01 do
+                    line.BackgroundTransparency = t
+                    wait(0.05)
+                end
+                wait(math.random(1, 3))
+            end
         end)
     end
     
-    task.wait(1)
-    playersScrollFrame.CanvasSize = UDim2.new(0, 0, 0, playersLayout.AbsoluteContentSize.Y + 15)
+    -- Horizontal lines
+    for i = 0, 10 do
+        local line = Instance.new("Frame")
+        line.Size = UDim2.new(1, 0, 0, 1)
+        line.Position = UDim2.new(0, 0, i/10, 0)
+        line.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+        line.BackgroundTransparency = 0.9
+        line.Parent = matrixGrid
+    end
 end
 
--- Panel principal - TAMAÑOS ESCALADOS
-local mainPanelSize = UDim2.new(0, baseMainSize.width * scaleFactor, 0, baseMainSize.height * scaleFactor)
-local mainPanelPos = UDim2.new(0.5, -(baseMainSize.width * scaleFactor) / 2, 0.5, -(baseMainSize.height * scaleFactor) / 2)
+-- Improved responsive panel sizing
+local function calculatePanelSize()
+    local baseWidth = 450
+    local baseHeight = 550
+    
+    if isMobile then
+        -- Mobile: Use percentage but limit maximum size
+        local maxWidth = math.min(screenSize.X * 0.85, baseWidth)
+        local maxHeight = math.min(screenSize.Y * 0.75, baseHeight)
+        
+        -- Maintain aspect ratio
+        local aspectRatio = baseWidth / baseHeight
+        if maxWidth / maxHeight > aspectRatio then
+            maxWidth = maxHeight * aspectRatio
+        else
+            maxHeight = maxWidth / aspectRatio
+        end
+        
+        return UDim2.new(0, maxWidth, 0, maxHeight)
+    else
+        -- Desktop: Fixed size
+        return UDim2.new(0, baseWidth, 0, baseHeight)
+    end
+end
 
+local panelSizeMode = calculatePanelSize()
+
+-- Main Panel Frame
 local mainPanel = Instance.new("Frame")
 mainPanel.Name = "MainPanel"
-mainPanel.Size = mainPanelSize
-mainPanel.Position = mainPanelPos
-mainPanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-mainPanel.BackgroundTransparency = 0.82
+mainPanel.Size = panelSizeMode
+mainPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+mainPanel.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
 mainPanel.BorderSizePixel = 0
 mainPanel.Parent = screenGui
+mainPanel.BackgroundTransparency = 1
+mainPanel.ZIndex = 5
 
-local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 25)
-panelCorner.Parent = mainPanel
+-- Panel Shadow Effect
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Size = UDim2.new(1, 30, 1, 30)
+shadow.Position = UDim2.new(0, -15, 0, -15)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+shadow.ImageTransparency = 0.5
+shadow.Parent = mainPanel
+shadow.ZIndex = 4
 
-local panelStroke = Instance.new("UIStroke")
-panelStroke.Color = Color3.fromRGB(255, 105, 180)
-panelStroke.Thickness = 3
-panelStroke.Transparency = 0.6
-panelStroke.Parent = mainPanel
+-- Red Border Effect
+local borderGlow = Instance.new("UIStroke")
+borderGlow.Color = Color3.fromRGB(255, 0, 0)
+borderGlow.Thickness = 3
+borderGlow.Transparency = 0
+borderGlow.Parent = mainPanel
 
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "Title"
-titleLabel.Size = UDim2.new(1, -50, 0, math.floor(60 * scaleFactor))
-titleLabel.Position = UDim2.new(0, 25, 0, math.floor(25 * scaleFactor))
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Steal A brainrot"
-titleLabel.TextColor3 = Color3.fromRGB(255, 20, 147)
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = mainPanel
+-- Corner Rounding
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainPanel
 
-local subtitleLabel = Instance.new("TextLabel")
-subtitleLabel.Name = "Subtitle"
-subtitleLabel.Size = UDim2.new(1, -50, 0, math.floor(30 * scaleFactor))
-subtitleLabel.Position = UDim2.new(0, 25, 0, math.floor(90 * scaleFactor))
-subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Text = "FREEMIUM - PREMIUM PANEL"
-subtitleLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
-subtitleLabel.TextScaled = true
-subtitleLabel.Font = Enum.Font.GothamMedium
-subtitleLabel.Parent = mainPanel
+-- Gradient Background
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 0, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 0, 0))
+}
+gradient.Rotation = 90
+gradient.Parent = mainPanel
 
-local getKeyButton = Instance.new("TextButton")
-getKeyButton.Name = "GetKeyButton"
-getKeyButton.Size = UDim2.new(1, -50, 0, math.floor(50 * scaleFactor))
-getKeyButton.Position = UDim2.new(0, 25, 0, math.floor(145 * scaleFactor))
-getKeyButton.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-getKeyButton.BorderSizePixel = 0
-getKeyButton.Text = "Get Key!"
-getKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-getKeyButton.TextScaled = true
-getKeyButton.Font = Enum.Font.GothamBold
-getKeyButton.Parent = mainPanel
+-- Matrix Rain Effect Container
+local matrixRainContainer = Instance.new("Frame")
+matrixRainContainer.Name = "MatrixRainContainer"
+matrixRainContainer.Size = UDim2.new(1, 0, 1, 0)
+matrixRainContainer.BackgroundTransparency = 1
+matrixRainContainer.ClipsDescendants = true
+matrixRainContainer.Parent = mainPanel
+matrixRainContainer.ZIndex = 6
 
-local getKeyCorner = Instance.new("UICorner")
-getKeyCorner.CornerRadius = UDim.new(0, 12)
-getKeyCorner.Parent = getKeyButton
+-- Scale-aware sizes
+local function getScaledSize(baseSize)
+    if isMobile then
+        local scale = panelSizeMode.X.Offset / 450
+        return baseSize * scale
+    end
+    return baseSize
+end
 
-local inputLabel = Instance.new("TextLabel")
-inputLabel.Name = "InputLabel"
-inputLabel.Size = UDim2.new(1, -50, 0, math.floor(28 * scaleFactor))
-inputLabel.Position = UDim2.new(0, 25, 0, math.floor(215 * scaleFactor))
-inputLabel.BackgroundTransparency = 1
-inputLabel.Text = "🔑 Submit Key"
-inputLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
-inputLabel.TextScaled = true
-inputLabel.Font = Enum.Font.GothamMedium
-inputLabel.TextXAlignment = Enum.TextXAlignment.Left
-inputLabel.Parent = mainPanel
+-- Title Frame
+local titleFrame = Instance.new("Frame")
+titleFrame.Size = UDim2.new(1, 0, 0, getScaledSize(120))
+titleFrame.Position = UDim2.new(0, 0, 0, 0)
+titleFrame.BackgroundTransparency = 1
+titleFrame.Parent = mainPanel
+titleFrame.ZIndex = 7
 
-local keyInput = Instance.new("TextBox")
-keyInput.Name = "KeyInput"
-keyInput.Size = UDim2.new(1, -50, 0, math.floor(55 * scaleFactor))
-keyInput.Position = UDim2.new(0, 25, 0, math.floor(250 * scaleFactor))
-keyInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-keyInput.BackgroundTransparency = 0.05
-keyInput.BorderSizePixel = 0
-keyInput.Text = ""
-keyInput.PlaceholderText = "put your key here..."
-keyInput.TextColor3 = Color3.fromRGB(139, 90, 140)
-keyInput.PlaceholderColor3 = Color3.fromRGB(180, 150, 180)
-keyInput.TextScaled = true
-keyInput.Font = Enum.Font.Gotham
-keyInput.Parent = mainPanel
+-- Main Title
+local mainTitle = Instance.new("TextLabel")
+mainTitle.Text = "LENON X ZAMAS"
+mainTitle.Size = UDim2.new(1, -20, 0, getScaledSize(50))
+mainTitle.Position = UDim2.new(0, 10, 0, 20)
+mainTitle.BackgroundTransparency = 1
+mainTitle.TextColor3 = Color3.fromRGB(255, 0, 0)
+mainTitle.TextScaled = true
+mainTitle.Font = Enum.Font.SciFi
+mainTitle.Parent = titleFrame
+mainTitle.ZIndex = 8
 
-local inputCorner = Instance.new("UICorner")
-inputCorner.CornerRadius = UDim.new(0, 15)
-inputCorner.Parent = keyInput
+-- Title glitch effect
+spawn(function()
+    local glitchTexts = {"LEN0N X Z4M4S", "L3N0N X ZAM45", "LENON X ZAMAS"}
+    while mainTitle.Parent do
+        wait(math.random(3, 7))
+        local originalText = mainTitle.Text
+        for i = 1, 3 do
+            mainTitle.Text = glitchTexts[math.random(1, #glitchTexts)]
+            wait(0.05)
+        end
+        mainTitle.Text = originalText
+    end
+end)
 
-local inputPadding = Instance.new("UIPadding")
-inputPadding.PaddingLeft = UDim.new(0, 15)
-inputPadding.PaddingRight = UDim.new(0, 15)
-inputPadding.Parent = keyInput
+-- Title stroke
+local titleStroke = Instance.new("UIStroke")
+titleStroke.Color = Color3.fromRGB(150, 0, 0)
+titleStroke.Thickness = 2
+titleStroke.Parent = mainTitle
+
+-- Subtitle
+local subtitle = Instance.new("TextLabel")
+subtitle.Text = "Violence Edition - Steal a Brainrot"
+subtitle.Size = UDim2.new(1, -20, 0, getScaledSize(25))
+subtitle.Position = UDim2.new(0, 10, 0, getScaledSize(75))
+subtitle.BackgroundTransparency = 1
+subtitle.TextColor3 = Color3.fromRGB(200, 0, 0)
+subtitle.TextScaled = true
+subtitle.Font = Enum.Font.Code
+subtitle.Parent = titleFrame
+subtitle.ZIndex = 8
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Text = "✕"
+closeButton.Size = UDim2.new(0, 35, 0, 35)
+closeButton.Position = UDim2.new(1, -45, 0, 10)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextScaled = true
+closeButton.Parent = mainPanel
+closeButton.ZIndex = 9
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0.5, 0)
+closeCorner.Parent = closeButton
+
+-- Info Button
+local infoButton = Instance.new("TextButton")
+infoButton.Text = "ℹ"
+infoButton.Size = UDim2.new(0, 35, 0, 35)
+infoButton.Position = UDim2.new(0, 10, 0, 10)
+infoButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+infoButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+infoButton.Font = Enum.Font.SourceSansBold
+infoButton.TextScaled = true
+infoButton.Parent = mainPanel
+infoButton.ZIndex = 9
+
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0.5, 0)
+infoCorner.Parent = infoButton
+
+-- Password Input Container
+local inputContainer = Instance.new("Frame")
+inputContainer.Size = UDim2.new(0.85, 0, 0, getScaledSize(60))
+inputContainer.Position = UDim2.new(0.075, 0, 0.35, 0)
+inputContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+inputContainer.Parent = mainPanel
+inputContainer.ZIndex = 7
 
 local inputStroke = Instance.new("UIStroke")
-inputStroke.Color = Color3.fromRGB(255, 182, 193)
+inputStroke.Color = Color3.fromRGB(255, 0, 0)
 inputStroke.Thickness = 2
-inputStroke.Transparency = 0.7
-inputStroke.Parent = keyInput
+inputStroke.Parent = inputContainer
 
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0, 8)
+inputCorner.Parent = inputContainer
+
+-- Password Label
+local passwordLabel = Instance.new("TextLabel")
+passwordLabel.Text = "PASSWORD"
+passwordLabel.Size = UDim2.new(1, 0, 0, 20)
+passwordLabel.Position = UDim2.new(0, 0, 0, -25)
+passwordLabel.BackgroundTransparency = 1
+passwordLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+passwordLabel.Font = Enum.Font.Code
+passwordLabel.TextScaled = true
+passwordLabel.Parent = inputContainer
+passwordLabel.ZIndex = 8
+
+-- Password TextBox
+local passwordInput = Instance.new("TextBox")
+passwordInput.Text = ""
+passwordInput.PlaceholderText = "Enter premium key..."
+passwordInput.Size = UDim2.new(0.95, 0, 0.8, 0)
+passwordInput.Position = UDim2.new(0.025, 0, 0.1, 0)
+passwordInput.BackgroundTransparency = 1
+passwordInput.TextColor3 = Color3.fromRGB(255, 0, 0)
+passwordInput.PlaceholderColor3 = Color3.fromRGB(100, 0, 0)
+passwordInput.Font = Enum.Font.Code
+passwordInput.TextScaled = true
+passwordInput.Parent = inputContainer
+passwordInput.ZIndex = 8
+
+-- Button Container
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size = UDim2.new(0.85, 0, 0, getScaledSize(50))
+buttonContainer.Position = UDim2.new(0.075, 0, 0.55, 0)
+buttonContainer.BackgroundTransparency = 1
+buttonContainer.Parent = mainPanel
+buttonContainer.ZIndex = 7
+
+-- Get Key Button
+local getKeyButton = Instance.new("TextButton")
+getKeyButton.Text = "GET KEY"
+getKeyButton.Size = UDim2.new(0.45, 0, 1, 0)
+getKeyButton.Position = UDim2.new(0, 0, 0, 0)
+getKeyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+getKeyButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+getKeyButton.Font = Enum.Font.SciFi
+getKeyButton.TextScaled = true
+getKeyButton.Parent = buttonContainer
+getKeyButton.ZIndex = 8
+
+local getKeyStroke = Instance.new("UIStroke")
+getKeyStroke.Color = Color3.fromRGB(255, 0, 0)
+getKeyStroke.Thickness = 2
+getKeyStroke.Parent = getKeyButton
+
+local getKeyCorner = Instance.new("UICorner")
+getKeyCorner.CornerRadius = UDim.new(0, 8)
+getKeyCorner.Parent = getKeyButton
+
+-- Submit Button
 local submitButton = Instance.new("TextButton")
-submitButton.Name = "SubmitButton"
-submitButton.Size = UDim2.new(1, -50, 0, math.floor(60 * scaleFactor))
-submitButton.Position = UDim2.new(0, 25, 0, math.floor(325 * scaleFactor))
-submitButton.BackgroundColor3 = Color3.fromRGB(255, 20, 147)
-submitButton.BorderSizePixel = 0
-submitButton.Text = "🌸 SUBMIT KEY 🌸"
-submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.Text = "SUBMIT"
+submitButton.Size = UDim2.new(0.45, 0, 1, 0)
+submitButton.Position = UDim2.new(0.55, 0, 0, 0)
+submitButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+submitButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+submitButton.Font = Enum.Font.SciFi
 submitButton.TextScaled = true
-submitButton.Font = Enum.Font.GothamBold
-submitButton.Parent = mainPanel
+submitButton.Parent = buttonContainer
+submitButton.ZIndex = 8
 
-local buttonCorner = Instance.new("UICorner")
-buttonCorner.CornerRadius = UDim.new(0, 15)
-buttonCorner.Parent = submitButton
+local submitStroke = Instance.new("UIStroke")
+submitStroke.Color = Color3.fromRGB(255, 0, 0)
+submitStroke.Thickness = 2
+submitStroke.Parent = submitButton
 
-local buttonGradient = Instance.new("UIGradient")
-buttonGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 20, 147)),
-    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 105, 180)),
-    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(218, 112, 214)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(186, 85, 211))
-}
-buttonGradient.Rotation = 135
-buttonGradient.Parent = submitButton
+local submitCorner = Instance.new("UICorner")
+submitCorner.CornerRadius = UDim.new(0, 8)
+submitCorner.Parent = submitButton
 
--- Toast para Get Key
-local getKeyToast = Instance.new("Frame")
-getKeyToast.Name = "GetKeyToast"
-getKeyToast.Size = UDim2.new(0, 400, 0, 90)
-getKeyToast.Position = UDim2.new(0.5, -200, 0, -100)
-getKeyToast.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
-getKeyToast.BorderSizePixel = 0
-getKeyToast.Visible = false
-getKeyToast.Parent = screenGui
+-- Japanese Decorative Elements
+local japaneseContainer = Instance.new("Frame")
+japaneseContainer.Size = UDim2.new(1, 0, 0, 50)
+japaneseContainer.Position = UDim2.new(0, 0, 0.85, 0)
+japaneseContainer.BackgroundTransparency = 1
+japaneseContainer.Parent = mainPanel
+japaneseContainer.ZIndex = 7
+
+local japaneseTexts = {"マトリックス", "侍", "忍者", "武士道", "赤い雨"}
+for i = 1, 3 do
+    local japText = Instance.new("TextLabel")
+    japText.Text = japaneseTexts[math.random(1, #japaneseTexts)]
+    japText.Size = UDim2.new(0.25, 0, 1, 0)
+    japText.Position = UDim2.new((i-1) * 0.33 + 0.1, 0, 0, 0)
+    japText.BackgroundTransparency = 1
+    japText.TextColor3 = Color3.fromRGB(100, 0, 0)
+    japText.Font = Enum.Font.Code
+    japText.TextScaled = true
+    japText.TextTransparency = 0.7
+    japText.Parent = japaneseContainer
+    
+    spawn(function()
+        while japText.Parent do
+            wait(math.random(3, 6))
+            local fadeOut = TweenService:Create(japText, 
+                TweenInfo.new(0.5), 
+                {TextTransparency = 1}
+            )
+            fadeOut:Play()
+            wait(0.5)
+            japText.Text = japaneseTexts[math.random(1, #japaneseTexts)]
+            local fadeIn = TweenService:Create(japText, 
+                TweenInfo.new(0.5), 
+                {TextTransparency = 0.7}
+            )
+            fadeIn:Play()
+        end
+    end)
+end
+
+-- Toast Notification
+local toastFrame = Instance.new("Frame")
+toastFrame.Size = UDim2.new(0, math.min(350, screenSize.X * 0.8), 0, 60)
+toastFrame.Position = UDim2.new(0.5, 0, 0, -70)
+toastFrame.AnchorPoint = Vector2.new(0.5, 0)
+toastFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toastFrame.Visible = false
+toastFrame.Parent = screenGui
+toastFrame.ZIndex = 20
 
 local toastCorner = Instance.new("UICorner")
-toastCorner.CornerRadius = UDim.new(0, 20)
-toastCorner.Parent = getKeyToast
+toastCorner.CornerRadius = UDim.new(0, 8)
+toastCorner.Parent = toastFrame
 
-local toastStroke = Instance.new("UIStroke")
-toastStroke.Color = Color3.fromRGB(255, 182, 193)
-toastStroke.Thickness = 2
-toastStroke.Parent = getKeyToast
+local toastGradient = Instance.new("UIGradient")
+toastGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
+}
+toastGradient.Rotation = 90
+toastGradient.Parent = toastFrame
 
-local toastLabel = Instance.new("TextLabel")
-toastLabel.Size = UDim2.new(1, -20, 1, -20)
-toastLabel.Position = UDim2.new(0, 10, 0, 10)
-toastLabel.BackgroundTransparency = 1
-toastLabel.Text = "🔗 Link has been copied!\nPaste it in your preferred browser... 🌸"
-toastLabel.TextColor3 = Color3.fromRGB(139, 90, 140)
-toastLabel.TextScaled = true
-toastLabel.Font = Enum.Font.GothamMedium
-toastLabel.Parent = getKeyToast
+local toastText = Instance.new("TextLabel")
+toastText.Text = "Key link copied (Use GOOGLE CHROME)"
+toastText.Size = UDim2.new(1, -10, 1, 0)
+toastText.Position = UDim2.new(0, 5, 0, 0)
+toastText.BackgroundTransparency = 1
+toastText.TextColor3 = Color3.fromRGB(0, 0, 0)
+toastText.Font = Enum.Font.SourceSansBold
+toastText.TextScaled = true
+toastText.Parent = toastFrame
 
--- Mensaje de éxito
-local successMessage = Instance.new("Frame")
-successMessage.Name = "SuccessMessage"
-successMessage.Size = UDim2.new(0, 400, 0, 90)
-successMessage.Position = UDim2.new(0.5, -200, 0.5, -45)
-successMessage.BackgroundColor3 = Color3.fromRGB(144, 238, 144)
-successMessage.BorderSizePixel = 0
-successMessage.Visible = false
-successMessage.Parent = screenGui
+-- Info Panel (matching main panel size)
+local infoPanel = Instance.new("Frame")
+infoPanel.Size = panelSizeMode
+infoPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+infoPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+infoPanel.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
+infoPanel.Visible = false
+infoPanel.Parent = screenGui
+infoPanel.ZIndex = 15
 
-local successCorner = Instance.new("UICorner")
-successCorner.CornerRadius = UDim.new(0, 20)
-successCorner.Parent = successMessage
+local infoPanelStroke = Instance.new("UIStroke")
+infoPanelStroke.Color = Color3.fromRGB(255, 0, 0)
+infoPanelStroke.Thickness = 3
+infoPanelStroke.Parent = infoPanel
 
-local successStroke = Instance.new("UIStroke")
-successStroke.Color = Color3.fromRGB(34, 139, 34)
-successStroke.Thickness = 2
-successStroke.Parent = successMessage
+local infoPanelCorner = Instance.new("UICorner")
+infoPanelCorner.CornerRadius = UDim.new(0, 12)
+infoPanelCorner.Parent = infoPanel
 
-local successLabel = Instance.new("TextLabel")
-successLabel.Size = UDim2.new(1, -20, 1, -20)
-successLabel.Position = UDim2.new(0, 10, 0, 10)
-successLabel.BackgroundTransparency = 1
-successLabel.Text = "🎉 Key activated successfully! 🌸"
-successLabel.TextColor3 = Color3.fromRGB(45, 90, 45)
-successLabel.TextScaled = true
-successLabel.Font = Enum.Font.GothamBold
-successLabel.Parent = successMessage
+local infoPanelGradient = Instance.new("UIGradient")
+infoPanelGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 0, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 0, 0))
+}
+infoPanelGradient.Rotation = 90
+infoPanelGradient.Parent = infoPanel
 
--- Función para crear pétalos de sakura
-local function createSakuraPetal()
-    local petal = Instance.new("Frame")
-    petal.Name = "SakuraPetal"
-    petal.Size = UDim2.new(0, math.random(8, 16), 0, math.random(8, 16))
-    petal.Position = UDim2.new(math.random(), 0, 0, math.random(-50, -20))
-    petal.BackgroundColor3 = Color3.fromRGB(255, 179, 217)
-    petal.BorderSizePixel = 0
-    petal.Rotation = math.random(0, 360)
-    petal.Parent = sakuraContainer
-    
-    local petalCorner = Instance.new("UICorner")
-    petalCorner.CornerRadius = UDim.new(0, math.random(3, 8))
-    petalCorner.Parent = petal
-    
-    local colors = {
-        Color3.fromRGB(255, 179, 217), Color3.fromRGB(255, 192, 203),
-        Color3.fromRGB(255, 182, 193), Color3.fromRGB(221, 160, 221),
-        Color3.fromRGB(240, 230, 140), Color3.fromRGB(255, 218, 185),
-        Color3.fromRGB(230, 230, 250), Color3.fromRGB(255, 240, 245)
-    }
-    petal.BackgroundColor3 = colors[math.random(1, #colors)]
-    
-    if math.random() > 0.5 then
-        local petalGradient = Instance.new("UIGradient")
-        petalGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, petal.BackgroundColor3),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-        }
-        petalGradient.Rotation = math.random(0, 360)
-        petalGradient.Parent = petal
-    end
-    
-    local fallTime = math.random(8, 15)
-    local fallTween = TweenService:Create(petal,
-        TweenInfo.new(fallTime, Enum.EasingStyle.Linear),
-        {
-            Position = UDim2.new(petal.Position.X.Scale + math.random(-30, 30)/100, 0, 1.3, 0),
-            Rotation = petal.Rotation + math.random(360, 720),
-            BackgroundTransparency = 1
-        }
-    )
-    
-    local swayTween = TweenService:Create(petal,
-        TweenInfo.new(math.random(2, 4), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, math.floor(fallTime/3), true),
-        {Position = UDim2.new(petal.Position.X.Scale + math.random(-10, 10)/100, 0, petal.Position.Y.Scale, 0)}
-    )
-    
-    fallTween:Play()
-    swayTween:Play()
-    
-    fallTween.Completed:Connect(function()
-        petal:Destroy()
-    end)
+-- Player Avatar
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Size = UDim2.new(0, getScaledSize(100), 0, getScaledSize(100))
+avatarImage.Position = UDim2.new(0.5, 0, 0, 20)
+avatarImage.AnchorPoint = Vector2.new(0.5, 0)
+avatarImage.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+avatarImage.Image = "rbxthumb://type=AvatarHeadShot&id="..player.UserId.."&w=420&h=420"
+avatarImage.Parent = infoPanel
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatarImage
+
+local avatarStroke = Instance.new("UIStroke")
+avatarStroke.Color = Color3.fromRGB(255, 0, 0)
+avatarStroke.Thickness = 2
+avatarStroke.Parent = avatarImage
+
+-- Player Info Labels
+local infoLabels = {
+    {text = "USER: "..player.Name, pos = 140},
+    {text = "ID: "..player.UserId, pos = 180},
+    {text = "ACCOUNT AGE: "..player.AccountAge.." days", pos = 220},
+    {text = "MATRIX SYSTEM v2.0", pos = 260},
+    {text = "© 2025 ZAMAS", pos = 300}
+}
+
+for _, info in pairs(infoLabels) do
+    local label = Instance.new("TextLabel")
+    label.Text = info.text
+    label.Size = UDim2.new(1, -20, 0, 30)
+    label.Position = UDim2.new(0, 10, 0, getScaledSize(info.pos))
+    label.BackgroundTransparency = 1
+    label.TextColor3 = info.pos > 250 and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(200, 0, 0)
+    label.Font = Enum.Font.Code
+    label.TextScaled = true
+    label.Parent = infoPanel
 end
 
--- Función para crear efectos especiales
-local function createSpecialEffect()
-    for i = 1, 35 do
-        task.spawn(function()
-            task.wait(i * 0.03)
-            createSakuraPetal()
+-- Close Info Panel Button
+local closeInfoButton = Instance.new("TextButton")
+closeInfoButton.Text = "CLOSE"
+closeInfoButton.Size = UDim2.new(0.5, 0, 0, 35)
+closeInfoButton.Position = UDim2.new(0.25, 0, 0, getScaledSize(350))
+closeInfoButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeInfoButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+closeInfoButton.Font = Enum.Font.SourceSansBold
+closeInfoButton.TextScaled = true
+closeInfoButton.Parent = infoPanel
+
+local closeInfoCorner = Instance.new("UICorner")
+closeInfoCorner.CornerRadius = UDim.new(0, 8)
+closeInfoCorner.Parent = closeInfoButton
+
+-- Floating particles
+local function createFloatingParticles()
+    for i = 1, 15 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
+        particle.Position = UDim2.new(math.random(), 0, 1, 0)
+        particle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        particle.BackgroundTransparency = math.random(3, 7) / 10
+        particle.BorderSizePixel = 0
+        particle.Parent = screenGui
+        particle.ZIndex = 2
+        
+        local particleCorner = Instance.new("UICorner")
+        particleCorner.CornerRadius = UDim.new(1, 0)
+        particleCorner.Parent = particle
+        
+        spawn(function()
+            local speed = math.random(20, 40)
+            while particle.Parent do
+                local tween = TweenService:Create(particle,
+                    TweenInfo.new(speed, Enum.EasingStyle.Linear),
+                    {Position = UDim2.new(math.random(), 0, -0.1, 0)}
+                )
+                tween:Play()
+                tween.Completed:Wait()
+                particle.Position = UDim2.new(math.random(), 0, 1, 0)
+            end
         end)
     end
-    
-    local brightTween = TweenService:Create(backgroundGradient,
-        TweenInfo.new(0.8, Enum.EasingStyle.Sine),
-        {Transparency = 0.3}
-    )
-    brightTween:Play()
-    
-    brightTween.Completed:Connect(function()
-        local normalTween = TweenService:Create(backgroundGradient,
-            TweenInfo.new(1.2, Enum.EasingStyle.Sine),
-            {Transparency = 0}
-        )
-        normalTween:Play()
-    end)
 end
 
--- Generar pétalos continuamente
-local petalConnection
-petalConnection = RunService.Heartbeat:Connect(function()
-    if math.random() > 0.94 then
-        createSakuraPetal()
-    end
-end)
-
--- Efectos del Get Key Button
-getKeyButton.MouseEnter:Connect(function()
-    local hoverTween = TweenService:Create(getKeyButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -40, 0, 60), BackgroundColor3 = Color3.fromRGB(128, 0, 128)}
-    )
-    hoverTween:Play()
-end)
-
-getKeyButton.MouseLeave:Connect(function()
-    local leaveTween = TweenService:Create(getKeyButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -50, 0, 55), BackgroundColor3 = Color3.fromRGB(138, 43, 226)}
-    )
-    leaveTween:Play()
-end)
-
--- Función del botón Get Key
-getKeyButton.MouseButton1Click:Connect(function()
-    setclipboard("https://zamasxmodder.github.io/SakurasCriptTRAIL/")
-    
-    local clickTween = TweenService:Create(getKeyButton,
-        TweenInfo.new(0.1, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -60, 0, 50)}
-    )
-    clickTween:Play()
-    
-    clickTween.Completed:Connect(function()
-        local releaseTween = TweenService:Create(getKeyButton,
-            TweenInfo.new(0.2, Enum.EasingStyle.Back),
-            {Size = UDim2.new(1, -50, 0, 55)}
-        )
-        releaseTween:Play()
-    end)
-    
-    getKeyToast.Visible = true
-    getKeyToast.Position = UDim2.new(0.5, -200, 0, -100)
-    
-    local showToastTween = TweenService:Create(getKeyToast,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back),
-        {Position = UDim2.new(0.5, -200, 0, 50)}
-    )
-    showToastTween:Play()
+-- Matrix Rain Effect
+local function createMatrixRain()
+    local characters = {"0", "1", "侍", "忍", "武", "士", "道", "赤", "雨", "マ", "ト", "リ", "ッ", "ク", "ス"}
     
     for i = 1, 8 do
-        task.wait(0.1)
-        createSakuraPetal()
-    end
-    
-    task.wait(4)
-    local hideToastTween = TweenService:Create(getKeyToast,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back),
-        {Position = UDim2.new(0.5, -200, 0, -100)}
-    )
-    hideToastTween:Play()
-    
-    hideToastTween.Completed:Connect(function()
-        getKeyToast.Visible = false
-    end)
-end)
-
--- Efectos del input
-keyInput.Focused:Connect(function()
-    local focusTween = TweenService:Create(keyInput,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -40, 0, 65)}
-    )
-    local strokeTween = TweenService:Create(inputStroke,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Thickness = 3, Transparency = 0.3}
-    )
-    focusTween:Play()
-    strokeTween:Play()
-end)
-
-keyInput.FocusLost:Connect(function()
-    local unfocusTween = TweenService:Create(keyInput,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -50, 0, 60)}
-    )
-    local strokeTween = TweenService:Create(inputStroke,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Thickness = 2, Transparency = 0.7}
-    )
-    unfocusTween:Play()
-    strokeTween:Play()
-end)
-
-keyInput:GetPropertyChangedSignal("Text"):Connect(function()
-    if #keyInput.Text > 0 and math.random() > 0.6 then
-        createSakuraPetal()
-    end
-end)
-
--- Efectos del botón Submit
-submitButton.MouseEnter:Connect(function()
-    local hoverTween = TweenService:Create(submitButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -40, 0, 70), BackgroundColor3 = Color3.fromRGB(255, 0, 128)}
-    )
-    hoverTween:Play()
-end)
-
-submitButton.MouseLeave:Connect(function()
-    local leaveTween = TweenService:Create(submitButton,
-        TweenInfo.new(0.3, Enum.EasingStyle.Back),
-        {Size = UDim2.new(1, -50, 0, 65), BackgroundColor3 = Color3.fromRGB(255, 20, 147)}
-    )
-    leaveTween:Play()
-end)
-
--- Función del botón submit
-submitButton.MouseButton1Click:Connect(function()
-    local key = keyInput.Text:match("^%s*(.-)%s*$")
-    
-    if key and key ~= "" then
-        local clickTween = TweenService:Create(submitButton,
-            TweenInfo.new(0.1, Enum.EasingStyle.Back),
-            {Size = UDim2.new(1, -60, 0, 60)}
-        )
-        clickTween:Play()
+        local column = Instance.new("Frame")
+        column.Size = UDim2.new(0, 20, 1, 0)
+        column.Position = UDim2.new(math.random(), 0, 0, 0)
+        column.BackgroundTransparency = 1
+        column.Parent = matrixRainContainer
+        column.ZIndex = 6
         
-        clickTween.Completed:Connect(function()
-            local releaseTween = TweenService:Create(submitButton,
-                TweenInfo.new(0.2, Enum.EasingStyle.Back),
-                {Size = UDim2.new(1, -50, 0, 65)}
-            )
-            releaseTween:Play()
+        for j = 1, 15 do
+            local char = Instance.new("TextLabel")
+            char.Text = characters[math.random(1, #characters)]
+            char.Size = UDim2.new(1, 0, 0, 20)
+            char.Position = UDim2.new(0, 0, 0, j * 25 - 400)
+            char.BackgroundTransparency = 1
+            char.TextColor3 = Color3.fromRGB(100, 0, 0)
+            char.Font = Enum.Font.Code
+            char.TextScaled = true
+            char.TextTransparency = math.random(5, 9) / 10
+            char.Parent = column
+            
+            spawn(function()
+                while char.Parent do
+                    wait(math.random(1, 3))
+                    char.Text = characters[math.random(1, #characters)]
+                    local flash = TweenService:Create(char,
+                        TweenInfo.new(0.2),
+                        {TextColor3 = Color3.fromRGB(255, 0, 0), TextTransparency = 0.3}
+                    )
+                    flash:Play()
+                    wait(0.2)
+                    local fade = TweenService:Create(char,
+                        TweenInfo.new(0.5),
+                        {TextColor3 = Color3.fromRGB(100, 0, 0), TextTransparency = math.random(5, 9) / 10}
+                    )
+                    fade:Play()
+                end
+            end)
+        end
+        
+        spawn(function()
+            local speed = math.random(8, 15)
+            while column.Parent do
+                local tween = TweenService:Create(column,
+                    TweenInfo.new(speed, Enum.EasingStyle.Linear),
+                    {Position = UDim2.new(column.Position.X.Scale, 0, 1, 0)}
+                )
+                tween:Play()
+                tween.Completed:Wait()
+                column.Position = UDim2.new(math.random(), 0, -1, 0)
+            end
         end)
-        
-        createSpecialEffect()
-        
-        successMessage.Visible = true
-        successMessage.Size = UDim2.new(0, 0, 0, 0)
-        
-        local showTween = TweenService:Create(successMessage,
-            TweenInfo.new(0.5, Enum.EasingStyle.Back),
-            {Size = UDim2.new(0, 400, 0, 90)}
-        )
-        showTween:Play()
-        
-        task.wait(0.3)
-        keyInput.Text = ""
-        keyInput.PlaceholderText = '"' .. key .. '" - Key registered! ✨'
-        
-        task.wait(3)
-        local hideTween = TweenService:Create(successMessage,
-            TweenInfo.new(0.5, Enum.EasingStyle.Back),
-            {Size = UDim2.new(0, 0, 0, 0)}
-        )
-        hideTween:Play()
-        
-        hideTween.Completed:Connect(function()
-            successMessage.Visible = false
-            keyInput.PlaceholderText = "put your key here..."
-        end)
-        
-        print("🌸 Key submitted:", key)
-    end
-end)
-
--- Animación flotante de paneles (solo Desktop)
-local function animatePanels()
-    if screenType == "Desktop" then
-        local mainTween = TweenService:Create(mainPanel,
-            TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {Position = UDim2.new(0.5, -230, 0.5, -250), Rotation = math.random(-1, 1)}
-        )
-        mainTween:Play()
-        
-        local statusTween = TweenService:Create(statusPanel,
-            TweenInfo.new(8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {Position = UDim2.new(0, 40, 0.5, -220), Rotation = math.random(-1, 1)}
-        )
-        statusTween:Play()
-        
-        local infoTween = TweenService:Create(playerInfoPanel,
-            TweenInfo.new(7.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-            {Position = UDim2.new(1, -340, 0.5, -250), Rotation = math.random(-1, 1)}
-        )
-        infoTween:Play()
     end
 end
 
--- Iniciar animaciones
-animatePanels()
-updatePlayersList()
+-- Animation Functions
+local function animateButton(button)
+    local originalSize = button.Size
+    local clickEffect = TweenService:Create(button, 
+        TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = originalSize - UDim2.new(0.02, 0, 0, 5)}
+    )
+    clickEffect:Play()
+    
+    local ripple = Instance.new("Frame")
+    ripple.Size = UDim2.new(0, 0, 0, 0)
+    ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ripple.AnchorPoint = Vector2.new(0.5, 0.5)
+    ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ripple.BackgroundTransparency = 0.5
+    ripple.Parent = button
+    
+    local rippleCorner = Instance.new("UICorner")
+    rippleCorner.CornerRadius = UDim.new(1, 0)
+    rippleCorner.Parent = ripple
+    
+    local rippleExpand = TweenService:Create(ripple,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = UDim2.new(2, 0, 2, 0), BackgroundTransparency = 1}
+    )
+    rippleExpand:Play()
+    
+    wait(0.1)
+    local bounceBack = TweenService:Create(button, 
+        TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = originalSize}
+    )
+    bounceBack:Play()
+    
+    rippleExpand.Completed:Connect(function()
+        ripple:Destroy()
+    end)
+end
 
--- Actualizar lista cada 5 minutos
-task.spawn(function()
-    while screenGui.Parent do
-        task.wait(300)
-        if screenGui.Parent then
-            updatePlayersList()
+local function showToast()
+    toastFrame.Visible = true
+    toastFrame.Position = UDim2.new(0.5, 0, 0, -70)
+    
+    local slideIn = TweenService:Create(toastFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, 0, 0, 20)}
+    )
+    slideIn:Play()
+    
+    wait(3)
+    
+    local slideOut = TweenService:Create(toastFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Position = UDim2.new(0.5, 0, 0, -70)}
+    )
+    slideOut:Play()
+    wait(0.5)
+    toastFrame.Visible = false
+end
+
+-- Panel entrance animation
+local function animatePanelEntrance()
+    mainPanel.Size = UDim2.new(0, 0, 0, 0)
+    mainPanel.BackgroundTransparency = 0
+    
+    local expandTween = TweenService:Create(mainPanel,
+        TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = panelSizeMode}
+    )
+    
+    expandTween:Play()
+    
+    bgOverlay.BackgroundTransparency = 1
+    local bgFade = TweenService:Create(bgOverlay,
+        TweenInfo.new(1, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 0.3}
+    )
+    bgFade:Play()
+end
+
+-- Fixed Panel Transition (Bug Fix)
+local function transitionToInfo()
+    -- Store original transparencies
+    local originalTransparencies = {}
+    
+    -- Fade out main panel
+    local fadeOut = TweenService:Create(mainPanel,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 1}
+    )
+    
+    for _, child in pairs(mainPanel:GetDescendants()) do
+        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+            originalTransparencies[child] = child.TextTransparency
+            TweenService:Create(child,
+                TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                {TextTransparency = 1}
+            ):Play()
+        elseif child:IsA("Frame") and child.Name ~= "MatrixRainContainer" then
+            originalTransparencies[child] = child.BackgroundTransparency
+            if child.BackgroundTransparency < 1 then
+                TweenService:Create(child,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                    {BackgroundTransparency = 1}
+                ):Play()
+            end
+        elseif child:IsA("ImageLabel") then
+            originalTransparencies[child] = child.ImageTransparency
+            TweenService:Create(child,
+                TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                {ImageTransparency = 1}
+            ):Play()
         end
     end
-end)
-
--- Crear pétalos iniciales
-for i = 1, 25 do
-    task.spawn(function()
-        task.wait(i * 0.15)
-        createSakuraPetal()
-    end)
+    
+    fadeOut:Play()
+    wait(0.3)
+    mainPanel.Visible = false
+    
+    -- Show info panel
+    infoPanel.Visible = true
+    infoPanel.BackgroundTransparency = 1
+    
+    local fadeIn = TweenService:Create(infoPanel,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 0}
+    )
+    fadeIn:Play()
 end
 
--- Función para alternar visibilidad (Tecla F)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
-        screenGui.Enabled = not screenGui.Enabled
+local function transitionToMain()
+    -- Fade out info panel
+    local fadeOut = TweenService:Create(infoPanel,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 1}
+    )
+    
+    fadeOut:Play()
+    wait(0.3)
+    infoPanel.Visible = false
+    
+    -- Show main panel
+    mainPanel.Visible = true
+    
+    -- Restore main panel with correct transparencies
+    local fadeIn = TweenService:Create(mainPanel,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 0}
+    )
+    
+    for _, child in pairs(mainPanel:GetDescendants()) do
+        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+            TweenService:Create(child,
+                TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                {TextTransparency = 0}
+            ):Play()
+        elseif child:IsA("Frame") then
+            if child.Name ~= "MatrixRainContainer" and child.BackgroundTransparency == 1 then
+                local targetTransparency = 0
+                if child.Name == "Shadow" or child.Parent == matrixRainContainer then
+                    targetTransparency = 1
+                end
+                TweenService:Create(child,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                    {BackgroundTransparency = targetTransparency}
+                ):Play()
+            end
+        elseif child:IsA("ImageLabel") then
+            local targetTransparency = child.Name == "Shadow" and 0.5 or 0
+            TweenService:Create(child,
+                TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                {ImageTransparency = targetTransparency}
+            ):Play()
+        end
+    end
+    
+    -- Fix Japanese text transparency
+    for _, child in pairs(japaneseContainer:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child.TextTransparency = 0.7
+        end
+    end
+    
+    fadeIn:Play()
+end
+
+-- Glowing Border Animation
+spawn(function()
+    while mainPanel.Parent do
+        local pulse = TweenService:Create(borderGlow,
+            TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 0.5, Thickness = 5}
+        )
+        pulse:Play()
+        wait(1)
+        local pulseBack = TweenService:Create(borderGlow,
+            TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 0, Thickness = 3}
+        )
+        pulseBack:Play()
+        wait(1)
     end
 end)
 
--- Retornar tabla con funciones útiles
-return {
-    GUI = screenGui,
-    HasAccess = hasAccess,
-    AccountAge = accountAge,
-    CreatePetal = createSakuraPetal,
-    SpecialEffect = createSpecialEffect,
-    UpdatePlayersList = updatePlayersList
-}
+-- Button Hover Effects
+local function addHoverEffect(button)
+    button.MouseEnter:Connect(function()
+        local hoverScale = TweenService:Create(button,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+            {Size = button.Size + UDim2.new(0.02, 0, 0, 2)}
+        )
+        hoverScale:Play()
+        
+        TweenService:Create(button,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+            {BackgroundColor3 = Color3.fromRGB(255, 0, 0), TextColor3 = Color3.fromRGB(0, 0, 0)}
+        ):Play()
+        
+        if button:FindFirstChild("UIStroke") then
+            TweenService:Create(button.UIStroke,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                {Thickness = 3, Color = Color3.fromRGB(255, 100, 100)}
+            ):Play()
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        local hoverScale = TweenService:Create(button,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+            {Size = button.Size - UDim2.new(0.02, 0, 0, 2)}
+        )
+        hoverScale:Play()
+        
+        TweenService:Create(button,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+            {BackgroundColor3 = Color3.fromRGB(0, 0, 0), TextColor3 = Color3.fromRGB(255, 0, 0)}
+        ):Play()
+        
+        if button:FindFirstChild("UIStroke") then
+            TweenService:Create(button.UIStroke,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                {Thickness = 2, Color = Color3.fromRGB(255, 0, 0)}
+            ):Play()
+        end
+    end)
+end
+
+-- Password field focus effects
+passwordInput.Focused:Connect(function()
+    local focusGlow = TweenService:Create(inputStroke,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {Thickness = 3, Color = Color3.fromRGB(255, 100, 100)}
+    )
+    focusGlow:Play()
+end)
+
+passwordInput.FocusLost:Connect(function()
+    local unfocusGlow = TweenService:Create(inputStroke,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        {Thickness = 2, Color = Color3.fromRGB(255, 0, 0)}
+    )
+    unfocusGlow:Play()
+end)
+
+-- Button Connections
+getKeyButton.MouseButton1Click:Connect(function()
+    animateButton(getKeyButton)
+    setclipboard("https://zamasxmodder.github.io/RedMatrixStealAbrainrotPREMIUMScript/")
+    spawn(showToast)
+    
+    passwordLabel.Text = "KEY COPIED!"
+    passwordLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    wait(1)
+    passwordLabel.Text = "PASSWORD"
+    passwordLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+end)
+
+submitButton.MouseButton1Click:Connect(function()
+    animateButton(submitButton)
+    local key = passwordInput.Text
+    
+    if key ~= "" then
+        submitButton.Text = "VALIDATING..."
+        
+        for i = 1, 3 do
+            submitButton.Text = "VALIDATING" .. string.rep(".", i)
+            wait(0.3)
+        end
+        
+        -- Replace with actual validation
+        if key == "YOUR_VALID_KEY" then
+            submitButton.Text = "✓ SUCCESS"
+            submitButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+            wait(1)
+            screenGui:Destroy()
+        else
+            submitButton.Text = "✗ INVALID"
+            submitButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+            
+            local originalPos = mainPanel.Position
+            for i = 1, 10 do
+                mainPanel.Position = originalPos + UDim2.new(0, math.random(-5, 5), 0, math.random(-5, 5))
+                wait(0.02)
+            end
+            mainPanel.Position = originalPos
+        end
+        
+        wait(1)
+        submitButton.Text = "SUBMIT"
+        submitButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+    else
+        passwordInput.PlaceholderText = "Key required!"
+        passwordInput.PlaceholderColor3 = Color3.fromRGB(255, 100, 100)
+        
+        local shake = TweenService:Create(inputContainer,
+            TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 4, true),
+            {Position = inputContainer.Position + UDim2.new(0.01, 0, 0, 0)}
+        )
+        shake:Play()
+        
+        wait(0.5)
+        passwordInput.PlaceholderText = "Enter premium key..."
+        passwordInput.PlaceholderColor3 = Color3.fromRGB(100, 0, 0)
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    animateButton(closeButton)
+    
+    local exitTween = TweenService:Create(mainPanel,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Size = UDim2.new(0, 0, 0, 0), Rotation = 180}
+    )
+    
+    local bgFadeOut = TweenService:Create(bgOverlay,
+        TweenInfo.new(0.5),
+        {BackgroundTransparency = 1}
+    )
+    
+    exitTween:Play()
+    bgFadeOut:Play()
+    
+    wait(0.5)
+    screenGui:Destroy()
+end)
+
+infoButton.MouseButton1Click:Connect(function()
+    animateButton(infoButton)
+    transitionToInfo()
+end)
+
+closeInfoButton.MouseButton1Click:Connect(function()
+    animateButton(closeInfoButton)
+    transitionToMain()
+end)
+
+-- Apply hover effects
+addHoverEffect(getKeyButton)
+addHoverEffect(submitButton)
+addHoverEffect(closeButton)
+addHoverEffect(infoButton)
+addHoverEffect(closeInfoButton)
+
+-- Make panel draggable
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    local targetPanel = mainPanel.Visible and mainPanel or infoPanel
+    targetPanel.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+local function setupDragging(panel)
+    panel.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = panel.Position
+            
+            TweenService:Create(panel,
+                TweenInfo.new(0.2),
+                {BackgroundTransparency = 0.1}
+            ):Play()
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    TweenService:Create(panel,
+                        TweenInfo.new(0.2),
+                        {BackgroundTransparency = 0}
+                    ):Play()
+                end
+            end)
+        end
+    end)
+    
+    panel.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+end
+
+setupDragging(mainPanel)
+setupDragging(infoPanel)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Screen resize handler
+camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    local newSize = camera.ViewportSize
+    local newIsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    
+    if newIsMobile ~= isMobile then
+        isMobile = newIsMobile
+        panelSizeMode = calculatePanelSize()
+        
+        TweenService:Create(mainPanel,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+            {Size = panelSizeMode}
+        ):Play()
+        
+        TweenService:Create(infoPanel,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+            {Size = panelSizeMode}
+        ):Play()
+    end
+end)
+
+-- Initialize effects
+createMatrixGrid()
+createMatrixRain()
+createFloatingParticles()
+
+-- Start entrance animation
+wait(0.1)
+animatePanelEntrance()
+
+print("Matrix Login Panel Fixed Edition - Loaded Successfully")
