@@ -859,7 +859,7 @@ end)
 -- Button Connections
 getKeyButton.MouseButton1Click:Connect(function()
     animateButton(getKeyButton)
-    setclipboard("https://zamasxmodder.github.io/RedMatrixStealAbrainrotPREMIUMScript/")
+    setclipboard("https://zamasxmodder.github.io/HalloweenScriptStealAbrainrotTrial/")
     spawn(showToast)
     
     passwordLabel.Text = "KEY COPIED!"
